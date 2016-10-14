@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <yvals.h>
 #include <array>
 #include <map>
 #include <string>

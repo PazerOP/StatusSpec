@@ -25,6 +25,7 @@
 class ProjectileOutlines::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName, std::function<void()> updateFunction, std::function<void(Vector)> updateFadesFunction);
+	virtual ~Panel() { }
 
 	virtual void OnTick();
 

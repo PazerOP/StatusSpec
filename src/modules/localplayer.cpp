@@ -29,6 +29,7 @@
 class LocalPlayer::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName, std::function<void()> setFunction);
+	virtual ~Panel() { }
 
 	virtual void OnTick();
 private:

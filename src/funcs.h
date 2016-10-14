@@ -41,18 +41,18 @@ public:
 	static int AddHook_C_HLTVCamera_SetMode(std::function<void(C_HLTVCamera *, int &)> hook);
 	static int AddHook_C_HLTVCamera_SetPrimaryTarget(std::function<void(C_HLTVCamera *, int &)> hook);
 
-	static int AddGlobalHook_C_TFPlayer_GetFOV(C_TFPlayer *instance, fastdelegate::FastDelegate0<float> hook, bool post);
-	static int AddHook_IClientEngineTools_InToolMode(IClientEngineTools *instance, fastdelegate::FastDelegate0<bool> hook, bool post);
-	static int AddHook_IClientEngineTools_IsThirdPersonCamera(IClientEngineTools *instance, fastdelegate::FastDelegate0<bool> hook, bool post);
-	static int AddHook_IClientEngineTools_SetupEngineView(IClientEngineTools *instance, fastdelegate::FastDelegate3<Vector &, QAngle &, float &, bool> hook, bool post);
-	static int AddHook_IClientMode_DoPostScreenSpaceEffects(IClientMode *instance, fastdelegate::FastDelegate1<const CViewSetup *, bool> hook, bool post);
-	static int AddHook_ICvar_ConsoleColorPrintf(ICvar *instance, fastdelegate::FastDelegate2<const Color &, const char *> hook, bool post);
-	static int AddHook_ICvar_ConsoleDPrintf(ICvar *instance, fastdelegate::FastDelegate1<const char *> hook, bool post);
-	static int AddHook_ICvar_ConsolePrintf(ICvar *instance, fastdelegate::FastDelegate1<const char *> hook, bool post);
-	static int AddHook_IGameEventManager2_FireEventClientSide(IGameEventManager2 *instance, fastdelegate::FastDelegate1<IGameEvent *, bool> hook, bool post);
-	static int AddHook_IMaterialSystem_FindMaterial(IMaterialSystem *instance, fastdelegate::FastDelegate4<char const *, const char *, bool, const char *, IMaterial *> hook, bool post);
-	static int AddHook_IPrediction_PostEntityPacketReceived(IPrediction *instance, fastdelegate::FastDelegate0<> hook, bool post);
-	static int AddHook_IVEngineClient_GetPlayerInfo(IVEngineClient *instance, fastdelegate::FastDelegate2<int, player_info_t *, bool> hook, bool post);
+	static int AddGlobalHook_C_TFPlayer_GetFOV(C_TFPlayer *instance, fastdelegate::FastDelegate<float> hook, bool post);
+	static int AddHook_IClientEngineTools_InToolMode(IClientEngineTools *instance, fastdelegate::FastDelegate<bool> hook, bool post);
+	static int AddHook_IClientEngineTools_IsThirdPersonCamera(IClientEngineTools *instance, fastdelegate::FastDelegate<bool> hook, bool post);
+	static int AddHook_IClientEngineTools_SetupEngineView(IClientEngineTools *instance, fastdelegate::FastDelegate<bool, Vector &, QAngle &, float &> hook, bool post);
+	static int AddHook_IClientMode_DoPostScreenSpaceEffects(IClientMode *instance, fastdelegate::FastDelegate<bool, const CViewSetup *> hook, bool post);
+	static int AddHook_ICvar_ConsoleColorPrintf(ICvar *instance, fastdelegate::FastDelegate<void, const Color &, const char *> hook, bool post);
+	static int AddHook_ICvar_ConsoleDPrintf(ICvar *instance, fastdelegate::FastDelegate<void, const char *> hook, bool post);
+	static int AddHook_ICvar_ConsolePrintf(ICvar *instance, fastdelegate::FastDelegate<void, const char *> hook, bool post);
+	static int AddHook_IGameEventManager2_FireEventClientSide(IGameEventManager2 *instance, fastdelegate::FastDelegate<bool, IGameEvent *> hook, bool post);
+	static int AddHook_IMaterialSystem_FindMaterial(IMaterialSystem *instance, fastdelegate::FastDelegate<IMaterial *, char const *, const char *, bool, const char *> hook, bool post);
+	static int AddHook_IPrediction_PostEntityPacketReceived(IPrediction *instance, fastdelegate::FastDelegate<void> hook, bool post);
+	static int AddHook_IVEngineClient_GetPlayerInfo(IVEngineClient *instance, fastdelegate::FastDelegate<bool, int, player_info_t *> hook, bool post);
 
 	static int CallFunc_GetLocalPlayerIndex();
 	static void CallFunc_C_BaseEntity_SetModelIndex(C_BaseEntity *instance, int index);

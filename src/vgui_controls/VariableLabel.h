@@ -17,6 +17,7 @@ namespace vgui {
 
 	public:
 		VariableLabel(Panel *parent, const char *panelName, const char *labelText);
+		virtual ~VariableLabel() { }
 
 		virtual void ApplySettings(KeyValues *inResourceData);
 		virtual void GetSettings(KeyValues *outResourceData);

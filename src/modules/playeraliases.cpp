@@ -10,7 +10,13 @@
 
 #include "playeraliases.h"
 
-#include "rapidjson/document.h"
+#pragma push_macro("max")
+#pragma push_macro("min")
+#undef max
+#undef min
+#include <rapidjson/document.h>
+#pragma pop_macro("max")
+#pragma pop_macro("min")
 
 #include "../common.h"
 #include "../funcs.h"

@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <yvals.h>
 #include "engine/iserverplugin.h"
 
 class StatusSpecPlugin: public IServerPluginCallbacks

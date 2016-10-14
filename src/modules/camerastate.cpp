@@ -12,9 +12,15 @@
 
 #include <functional>
 
-#include "rapidjson/document.h"
+#pragma push_macro("max")
+#pragma push_macro("min")
+#undef max
+#undef min
+#include <rapidjson/document.h>
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
+#pragma pop_macro("max")
+#pragma pop_macro("min")
 
 #include "cbase.h"
 #include "hltvcamera.h"
@@ -55,6 +61,7 @@ public:
 class CameraState::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName, std::function<void()> updateFunction);
+	virtual ~Panel() { }
 
 	virtual void OnTick();
 private:

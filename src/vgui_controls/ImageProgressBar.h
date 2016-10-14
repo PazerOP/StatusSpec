@@ -18,6 +18,7 @@ namespace vgui {
 	public:
 		ImageProgressBar(Panel *parent, const char *panelName);
 		ImageProgressBar(Panel *parent, const char *panelName, const char *topTexturename, const char *bottomTextureName);
+		virtual ~ImageProgressBar() { }
 
 		virtual void Paint(void);
 		virtual void ApplySettings(KeyValues *inResourceData);

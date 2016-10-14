@@ -134,7 +134,7 @@ bool Funcs::AddDetour_C_HLTVCamera_SetPrimaryTarget(SPTH_t detour) {
 	return false;
 }
 
-int Funcs::AddGlobalHook_C_TFPlayer_GetFOV(C_TFPlayer *instance, fastdelegate::FastDelegate0<float> hook, bool post) {
+int Funcs::AddGlobalHook_C_TFPlayer_GetFOV(C_TFPlayer *instance, fastdelegate::FastDelegate<float> hook, bool post) {
 	return SH_ADD_MANUALHOOK(C_TFPlayer_GetFOV, instance, hook, post);
 }
 
@@ -169,47 +169,47 @@ int Funcs::AddHook_C_HLTVCamera_SetPrimaryTarget(std::function<void(C_HLTVCamera
 	return setPrimaryTargetLastHookRegistered;
 }
 
-int Funcs::AddHook_IClientEngineTools_InToolMode(IClientEngineTools *instance, fastdelegate::FastDelegate0<bool> hook, bool post) {
+int Funcs::AddHook_IClientEngineTools_InToolMode(IClientEngineTools *instance, fastdelegate::FastDelegate<bool> hook, bool post) {
 	return SH_ADD_HOOK(IClientEngineTools, InToolMode, instance, hook, post);
 }
 
-int Funcs::AddHook_IClientEngineTools_IsThirdPersonCamera(IClientEngineTools *instance, fastdelegate::FastDelegate0<bool> hook, bool post) {
+int Funcs::AddHook_IClientEngineTools_IsThirdPersonCamera(IClientEngineTools *instance, fastdelegate::FastDelegate<bool> hook, bool post) {
 	return SH_ADD_HOOK(IClientEngineTools, IsThirdPersonCamera, instance, hook, post);
 }
 
-int Funcs::AddHook_IClientEngineTools_SetupEngineView(IClientEngineTools *instance, fastdelegate::FastDelegate3<Vector &, QAngle &, float &, bool> hook, bool post) {
+int Funcs::AddHook_IClientEngineTools_SetupEngineView(IClientEngineTools *instance, fastdelegate::FastDelegate<bool, Vector &, QAngle &, float &> hook, bool post) {
 	return SH_ADD_HOOK(IClientEngineTools, SetupEngineView, instance, hook, post);
 }
 
-int Funcs::AddHook_IClientMode_DoPostScreenSpaceEffects(IClientMode *instance, fastdelegate::FastDelegate1<const CViewSetup *, bool> hook, bool post) {
+int Funcs::AddHook_IClientMode_DoPostScreenSpaceEffects(IClientMode *instance, fastdelegate::FastDelegate<bool, const CViewSetup *> hook, bool post) {
 	return SH_ADD_HOOK(IClientMode, DoPostScreenSpaceEffects, instance, hook, post);
 }
 
-int Funcs::AddHook_ICvar_ConsoleColorPrintf(ICvar *instance, fastdelegate::FastDelegate2<const Color &, const char *> hook, bool post) {
+int Funcs::AddHook_ICvar_ConsoleColorPrintf(ICvar *instance, fastdelegate::FastDelegate<void, const Color &, const char *> hook, bool post) {
 	return SH_ADD_HOOK(ICvar, ConsoleColorPrintf, instance, hook, post);
 }
 
-int Funcs::AddHook_ICvar_ConsoleDPrintf(ICvar *instance, fastdelegate::FastDelegate1<const char *> hook, bool post) {
+int Funcs::AddHook_ICvar_ConsoleDPrintf(ICvar *instance, fastdelegate::FastDelegate<void, const char *> hook, bool post) {
 	return SH_ADD_HOOK(ICvar, ConsoleDPrintf, instance, hook, post);
 }
 
-int Funcs::AddHook_ICvar_ConsolePrintf(ICvar *instance, fastdelegate::FastDelegate1<const char *> hook, bool post) {
+int Funcs::AddHook_ICvar_ConsolePrintf(ICvar *instance, fastdelegate::FastDelegate<void, const char *> hook, bool post) {
 	return SH_ADD_HOOK(ICvar, ConsolePrintf, instance, hook, post);
 }
 
-int Funcs::AddHook_IGameEventManager2_FireEventClientSide(IGameEventManager2 *instance, fastdelegate::FastDelegate1<IGameEvent *, bool> hook, bool post) {
+int Funcs::AddHook_IGameEventManager2_FireEventClientSide(IGameEventManager2 *instance, fastdelegate::FastDelegate<bool, IGameEvent *> hook, bool post) {
 	return SH_ADD_HOOK(IGameEventManager2, FireEventClientSide, instance, hook, post);
 }
 
-int Funcs::AddHook_IMaterialSystem_FindMaterial(IMaterialSystem *instance, fastdelegate::FastDelegate4<char const *, const char *, bool, const char *, IMaterial *> hook, bool post) {
+int Funcs::AddHook_IMaterialSystem_FindMaterial(IMaterialSystem *instance, fastdelegate::FastDelegate<IMaterial *, char const *, const char *, bool, const char *> hook, bool post) {
 	return SH_ADD_HOOK(IMaterialSystem, FindMaterial, instance, hook, post);
 }
 
-int Funcs::AddHook_IPrediction_PostEntityPacketReceived(IPrediction *instance, fastdelegate::FastDelegate0<> hook, bool post) {
+int Funcs::AddHook_IPrediction_PostEntityPacketReceived(IPrediction *instance, fastdelegate::FastDelegate<void> hook, bool post) {
 	return SH_ADD_HOOK(IPrediction, PostEntityPacketReceived, instance, hook, post);
 }
 
-int Funcs::AddHook_IVEngineClient_GetPlayerInfo(IVEngineClient *instance, fastdelegate::FastDelegate2<int, player_info_t *, bool> hook, bool post) {
+int Funcs::AddHook_IVEngineClient_GetPlayerInfo(IVEngineClient *instance, fastdelegate::FastDelegate<bool, int, player_info_t*> hook, bool post) {
 	return SH_ADD_HOOK(IVEngineClient, GetPlayerInfo, instance, hook, post);
 }
 

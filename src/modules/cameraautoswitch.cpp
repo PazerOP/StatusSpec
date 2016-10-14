@@ -27,6 +27,7 @@
 class CameraAutoSwitch::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName);
+	virtual ~Panel() { }
 
 	virtual void OnTick();
 

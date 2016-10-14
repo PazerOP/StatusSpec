@@ -15,6 +15,7 @@ class CGameConsoleDialog : public vgui::CConsoleDialog
 
 public:
 	CGameConsoleDialog();
+	virtual ~CGameConsoleDialog() { }
 
 private:
 	MESSAGE_FUNC_CHARPTR(OnCommandSubmitted, "CommandSubmitted", command);

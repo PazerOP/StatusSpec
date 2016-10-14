@@ -31,6 +31,7 @@ class MedigunInfo::MainPanel : public vgui::EditablePanel {
 
 public:
 	MainPanel(vgui::Panel *parent, const char *panelName);
+	virtual ~MainPanel() { }
 
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void LoadControlSettings(const char *dialogResourceName, const char *pathID = NULL, KeyValues *pPreloadedKeyValues = NULL, KeyValues *pConditions = NULL);
@@ -55,6 +56,7 @@ class MedigunInfo::MedigunPanel : public vgui::EditablePanel {
 
 public:
 	MedigunPanel(vgui::Panel *parent, const char *panelName);
+	virtual ~MedigunPanel() { }
 
 private:
 	MESSAGE_FUNC_PARAMS(OnMedigunInfoUpdate, "MedigunInfo", attributes);
@@ -225,13 +227,17 @@ void MedigunInfo::MainPanel::OnTick() {
 	size_t bluMediguns = 0;
 	size_t redMediguns = 0;
 
-	for (Player player : Player::Iterable()) {
-		if (player.GetClass() == TFClass_Medic && (player.GetTeam() == TFTeam_Blue || player.GetTeam() == TFTeam_Red)) {
+	for (Player player : Player::Iterable()) 
+	{
+		TFClassType cls = player.GetClass();
+		TFTeam team = player.GetTeam();
+		if (cls == TFClass_Medic && (team == TFTeam_Blue || team == TFTeam_Red))
+		{
 			for (int weaponIndex = 0; weaponIndex < MAX_WEAPONS; weaponIndex++) {
 				C_BaseCombatWeapon *weapon = player.GetWeapon(weaponIndex);
 
 				if (weapon && Entities::CheckEntityBaseclass(weapon, "WeaponMedigun")) {
-					MedigunPanel *medigunPanel;
+					MedigunPanel *medigunPanel = nullptr;
 					int x, y;
 
 					if (player.GetTeam() == TFTeam_Red) {

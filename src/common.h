@@ -51,6 +51,17 @@ inline bool IsInteger(const std::string &s) {
 	return (*p == 0);
 }
 
+inline bool IsFloat(const std::string& s)
+{
+	if (s.empty())
+		return false;
+
+	char* p;
+	strtof(s.c_str(), &p);
+
+	return (*p == 0);
+}
+
 inline CSteamID ConvertTextToSteamID(std::string textID) {
 	if (IsInteger(textID)) {
 		uint64_t steamID = strtoull(textID.c_str(), nullptr, 10);

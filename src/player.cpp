@@ -275,8 +275,10 @@ bool Player::CheckCondition(TFCond condition) const {
 }
 
 TFClassType Player::GetClass() const {
-	if (IsValid()) {
-		return (TFClassType)*Entities::GetEntityProp<int *>(playerEntity.Get(), { "m_iClass" });
+	if (IsValid())
+	{
+		TFClassType retVal = (TFClassType)*Entities::GetEntityProp<int *>(playerEntity.Get(), { "m_iClass" });
+		return retVal;
 	}
 
 	return TFClass_Unknown;
@@ -358,7 +360,15 @@ CSteamID Player::GetSteamID() const {
 
 TFTeam Player::GetTeam() const {
 	if (IsValid()) {
-		TFTeam team = (TFTeam)dynamic_cast<C_BaseEntity *>(playerEntity.Get())->GetTeamNumber();
+		C_BaseEntity* entity = dynamic_cast<C_BaseEntity *>(playerEntity.Get());
+		if (!entity)
+			return TFTeam_Unassigned;
+
+		//"DT_BaseEntity.m_iTeamNum"
+
+		//TFTeam team = (TFTeam)entity->GetTeamNumber();
+
+		TFTeam team = (TFTeam)*Entities::GetEntityProp<int*>(entity, { "m_iTeamNum" });
 
 		return team;
 	}
@@ -387,8 +397,9 @@ C_BaseCombatWeapon *Player::GetWeapon(int i) const {
 }
 
 bool Player::IsAlive() const {
-	if (IsValid()) {
-		return dynamic_cast<C_BaseEntity *>(playerEntity.Get())->IsAlive();
+	if (IsValid()) 
+	{
+		return *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(playerEntity.Get()), { "m_lifeState" }) == LIFE_ALIVE;
 	}
 
 	return false;

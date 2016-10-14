@@ -25,6 +25,7 @@
 class TeamHealthComparison::Panel : public vgui::EditablePanel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName);
+	virtual ~Panel() { }
 
 	virtual void OnTick();
 private:
