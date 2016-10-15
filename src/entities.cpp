@@ -104,42 +104,42 @@ bool Entities::GetSubProp(RecvTable *table, const char *propName, RecvProp *&pro
 	return false;
 }
 
-bool Entities::CheckEntityBaseclass(IClientEntity *entity, std::string baseclass) {
+bool Entities::CheckEntityBaseclass(IClientEntity *entity, const char* baseclass)
+{
 	ClientClass *clientClass = entity->GetClientClass();
 
-	if (clientClass) {
+	if (clientClass)
 		return CheckClassBaseclass(clientClass, baseclass);
-	}
 
 	return false;
 }
 
-bool Entities::CheckClassBaseclass(ClientClass *clientClass, std::string baseclass) {
+bool Entities::CheckClassBaseclass(ClientClass *clientClass, const char* baseclass)
+{
 	RecvTable *sTable = clientClass->m_pRecvTable;
 
-	if (sTable) {
+	if (sTable)
 		return CheckTableBaseclass(sTable, baseclass);
-	}
 
 	return false;
 }
 
-bool Entities::CheckTableBaseclass(RecvTable *sTable, std::string baseclass) {
-	if (std::string(sTable->GetName()).compare("DT_" + baseclass) == 0) {
+bool Entities::CheckTableBaseclass(RecvTable *sTable, const char* baseclass)
+{
+	const char* tName = sTable->GetName();
+	if (tName && tName[0] && tName[1] && tName[2] && !strcmp(tName + 3, baseclass))
 		return true;
-	}
 
-	for (int i = 0; i < sTable->GetNumProps(); i++) {
+	for (int i = 0; i < sTable->GetNumProps(); i++)
+	{
 		RecvProp *sProp = sTable->GetProp(i);
 
-		if (strcmp(sProp->GetName(), "baseclass") != 0) {
+		if (strcmp(sProp->GetName(), "baseclass"))
 			continue;
-		}
 
 		RecvTable *sChildTable = sProp->GetDataTable();
-		if (sChildTable) {
+		if (sChildTable)
 			return CheckTableBaseclass(sChildTable, baseclass);
-		}
 	}
 
 	return false;

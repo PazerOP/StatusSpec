@@ -115,17 +115,19 @@ void ProjectileOutlines::UpdateGlowFades(Vector origin) {
 	}
 }
 
-void ProjectileOutlines::UpdateGlows() {
+void ProjectileOutlines::UpdateGlows()
+{
 	int maxEntity = Interfaces::pClientEntityList->GetHighestEntityIndex();
 
-	for (int i = 0; i < maxEntity; i++) {
+	for (int i = 0; i < maxEntity; i++)
+	{
 		IClientEntity *entity = Interfaces::pClientEntityList->GetClientEntity(i);
 
-		if (!entity) {
+		if (!entity)
 			continue;
-		}
 
-		if (rockets->GetBool() && Entities::CheckEntityBaseclass(entity, "TFProjectile_Rocket")) {
+		if (rockets->GetBool() && Entities::CheckEntityBaseclass(entity, "TFProjectile_Rocket"))
+		{
 			Color glowColor = GetGlowColor(entity);
 
 			float red = glowColor.r() / 255.0f;
@@ -137,11 +139,15 @@ void ProjectileOutlines::UpdateGlows() {
 
 			continue;
 		}
-
-		if (Entities::CheckEntityBaseclass(entity, "TFProjectile_Pipebomb")) {
+		
+		bool pills = grenades->GetBool();
+		bool stickies = stickybombs->GetBool();
+		if ((pills || stickies) && Entities::CheckEntityBaseclass(entity, "TFProjectile_Pipebomb"))
+		{
 			int type = *Entities::GetEntityProp<int *>(entity, { "m_iType" });
 
-			if (type == TFGrenadePipebombType_Grenade && grenades->GetBool()) {
+			if (type == TFGrenadePipebombType_Grenade && pills)
+			{
 				Color glowColor = GetGlowColor(entity);
 
 				float red = glowColor.r() / 255.0f;
@@ -153,7 +159,8 @@ void ProjectileOutlines::UpdateGlows() {
 
 				continue;
 			}
-			else if (type == TFGrenadePipebombType_Stickybomb && stickybombs->GetBool()) {
+			else if (type == TFGrenadePipebombType_Stickybomb && stickies)
+			{
 				Color glowColor = GetGlowColor(entity);
 
 				float red = glowColor.r() / 255.0f;

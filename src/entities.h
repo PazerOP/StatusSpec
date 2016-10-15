@@ -26,14 +26,14 @@ public:
 		return reinterpret_cast<T>(GetEntityProp(entity, propertyTree));
 	};
 
-	static bool CheckEntityBaseclass(IClientEntity *entity, std::string baseclass);
+	static bool CheckEntityBaseclass(IClientEntity *entity, const char* baseclass);
 
 private:
 	static bool GetSubProp(RecvTable *table, const char *propName, RecvProp *&prop, int &offset);
 	static void *GetEntityProp(IClientEntity *entity, std::vector<std::string> propertyTree);
 
-	static bool CheckClassBaseclass(ClientClass *clientClass, std::string baseclass);
-	static bool CheckTableBaseclass(RecvTable *sTable, std::string baseclass);
+	static bool CheckClassBaseclass(ClientClass *clientClass, const char* baseclass);
+	static bool CheckTableBaseclass(RecvTable *sTable, const char* baseclass);
 
 	static std::unordered_map<std::string, std::unordered_map<std::string, int>> classPropOffsets;
 };
