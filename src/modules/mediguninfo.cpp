@@ -422,11 +422,14 @@ void MedigunInfo::MedigunPanel::OnMedigunInfoUpdate(KeyValues *attributes) {
 	}
 
 	SetDialogVariable("charge", int(floor(level * 100.0f)));
-	SetDialogVariable("charges", int(floor(level * 4.0f)));
-	SetDialogVariable("charge1", int(floor(level * 400.0f) - 0.0f) < 0 ? 0 : int(floor(level * 400.0f) - 0.0f));
-	SetDialogVariable("charge2", int(floor(level * 400.0f) - 100.0f) < 0 ? 0 : int(floor(level * 400.0f) - 100.0f));
-	SetDialogVariable("charge3", int(floor(level * 400.0f) - 200.0f) < 0 ? 0 : int(floor(level * 400.0f) - 200.0f));
-	SetDialogVariable("charge4", int(floor(level * 400.0f) - 300.0f) < 0 ? 0 : int(floor(level * 400.0f) - 300.0f));
+	if (medigun == TFMedigun_Vaccinator)
+	{
+		SetDialogVariable("charges", int(floor(level * 4.0f)));
+		SetDialogVariable("charge1", int(floor(level * 400.0f) - 0.0f) < 0 ? 0 : int(floor(level * 400.0f) - 0.0f));
+		SetDialogVariable("charge2", int(floor(level * 400.0f) - 100.0f) < 0 ? 0 : int(floor(level * 400.0f) - 100.0f));
+		SetDialogVariable("charge3", int(floor(level * 400.0f) - 200.0f) < 0 ? 0 : int(floor(level * 400.0f) - 200.0f));
+		SetDialogVariable("charge4", int(floor(level * 400.0f) - 300.0f) < 0 ? 0 : int(floor(level * 400.0f) - 300.0f));
+	}
 }
 
 void MedigunInfo::MedigunPanel::OnReloadControlSettings(KeyValues *attributes) {
