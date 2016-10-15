@@ -198,11 +198,21 @@ Killstreaks::Panel::~Panel() {
 		}
 	}
 
-	for (Player player : Player::Iterable()) {
-		int *killstreakPrimary = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "000" });
-		int *killstreakSecondary = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "001" });
-		int *killstreakMelee = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "002" });
-		int *killstreakPDA = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "003" });
+	for (Player* player : Player::Iterable())
+	{
+		Assert(player);
+		if (!player)
+			continue;
+
+		auto playerEntity = player->GetEntity();
+		Assert(playerEntity);
+		if (!playerEntity)
+			continue;
+
+		int *killstreakPrimary = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "000" });
+		int *killstreakSecondary = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "001" });
+		int *killstreakMelee = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "002" });
+		int *killstreakPDA = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "003" });
 
 		*killstreakPrimary = 0;
 		*killstreakSecondary = 0;
@@ -231,37 +241,51 @@ void Killstreaks::Panel::OnTick() {
 			}
 		}
 
-		for (Player player : Player::Iterable()) {
-			int *killstreakPrimary = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "000" });
-			int *killstreakSecondary = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "001" });
-			int *killstreakMelee = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "002" });
-			int *killstreakPDA = Entities::GetEntityProp<int *>(player.GetEntity(), { "m_nStreaks", "003" });
+		for (Player* player : Player::Iterable())
+		{
+			Assert(player);
+			if (!player)
+				continue;
 
-			int userid = player.GetUserID();
+			auto playerEntity = player->GetEntity();
+			Assert(playerEntity);
+			if (!playerEntity)
+				continue;
 
-			if (currentKillstreaks.find(userid) != currentKillstreaks.end()) {
+			int *killstreakPrimary = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "000" });
+			int *killstreakSecondary = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "001" });
+			int *killstreakMelee = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "002" });
+			int *killstreakPDA = Entities::GetEntityProp<int *>(playerEntity, { "m_nStreaks", "003" });
+
+			int userid = player->GetUserID();
+
+			if (currentKillstreaks.find(userid) != currentKillstreaks.end())
+			{
 				*killstreakPrimary = currentKillstreaks[userid];
 				*killstreakSecondary = currentKillstreaks[userid];
 				*killstreakMelee = currentKillstreaks[userid];
 				*killstreakPDA = currentKillstreaks[userid];
 
-				if (gameResourcesEntity.IsValid() && gameResourcesEntity.Get()) {
+				if (gameResourcesEntity.IsValid() && gameResourcesEntity.Get())
+				{
 					char index[4];
-					GetPropIndexString(player->entindex(), index);
+					GetPropIndexString(playerEntity->entindex(), index);
 
 					int *killstreakGlobal = Entities::GetEntityProp<int *>(gameResourcesEntity.Get(), { "m_iStreaks", index });
 					*killstreakGlobal = currentKillstreaks[userid];
 				}
 			}
-			else {
+			else
+			{
 				*killstreakPrimary = 0;
 				*killstreakSecondary = 0;
 				*killstreakMelee = 0;
 				*killstreakPDA = 0;
 
-				if (gameResourcesEntity.IsValid() && gameResourcesEntity.Get()) {
+				if (gameResourcesEntity.IsValid() && gameResourcesEntity.Get())
+				{
 					char index[4];
-					GetPropIndexString(player->entindex(), index);
+					GetPropIndexString(playerEntity->entindex(), index);
 
 					int *killstreakGlobal = Entities::GetEntityProp<int *>(gameResourcesEntity.Get(), { "m_iStreaks", index });
 					*killstreakGlobal = 0;
@@ -297,16 +321,16 @@ bool Killstreaks::Panel::FireEventClientSideOverride(IGameEvent *event) {
 				event->SetInt("kill_streak_total", currentKillstreaks[attackerUserID]);
 				event->SetInt("kill_streak_wep", currentKillstreaks[attackerUserID]);
 
-				Player attacker = Interfaces::pEngineClient->GetPlayerForUserID(attackerUserID);
+				Player* attacker = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(attackerUserID) - 1);
 
 				if (attacker) {
-					if (attacker.GetTeam() == TFTeam_Red) {
+					if (attacker->GetTeam() == TFTeam_Red) {
 						if (currentKillstreaks[attackerUserID] > redTopKillstreak) {
 							redTopKillstreak = currentKillstreaks[attackerUserID];
 							redTopKillstreakPlayer = attackerUserID;
 						}
 					}
-					else if (attacker.GetTeam() == TFTeam_Blue) {
+					else if (attacker->GetTeam() == TFTeam_Blue) {
 						if (currentKillstreaks[attackerUserID] > bluTopKillstreak) {
 							bluTopKillstreak = currentKillstreaks[attackerUserID];
 							bluTopKillstreakPlayer = attackerUserID;
@@ -321,14 +345,14 @@ bool Killstreaks::Panel::FireEventClientSideOverride(IGameEvent *event) {
 		}
 
 		if (assisterUserID != -1) {
-			Player assister = Interfaces::pEngineClient->GetPlayerForUserID(assisterUserID);
+			Player* assister = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(assisterUserID));
 
 			if (assister) {
 				for (int i = 0; i < MAX_WEAPONS; i++) {
 					char index[4];
 					GetPropIndexString(i, index);
 
-					IClientEntity *weapon = Entities::GetEntityProp<EHANDLE *>(assister.GetEntity(), { "m_hMyWeapons", index })->Get();
+					IClientEntity *weapon = Entities::GetEntityProp<EHANDLE *>(assister->GetEntity(), { "m_hMyWeapons", index })->Get();
 
 					if (!weapon || !Entities::CheckEntityBaseclass(weapon, "WeaponMedigun")) {
 						continue;
@@ -342,13 +366,13 @@ bool Killstreaks::Panel::FireEventClientSideOverride(IGameEvent *event) {
 						if (healingTarget == Interfaces::pEngineClient->GetPlayerForUserID(attackerUserID)) {
 							currentKillstreaks[assisterUserID]++;
 
-							if (assister.GetTeam() == TFTeam_Red) {
+							if (assister->GetTeam() == TFTeam_Red) {
 								if (currentKillstreaks[assisterUserID] > redTopKillstreak) {
 									redTopKillstreak = currentKillstreaks[assisterUserID];
 									redTopKillstreakPlayer = assisterUserID;
 								}
 							}
-							else if (assister.GetTeam() == TFTeam_Blue) {
+							else if (assister->GetTeam() == TFTeam_Blue) {
 								if (currentKillstreaks[assisterUserID] > bluTopKillstreak) {
 									bluTopKillstreak = currentKillstreaks[assisterUserID];
 									bluTopKillstreakPlayer = assisterUserID;

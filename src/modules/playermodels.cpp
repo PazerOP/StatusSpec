@@ -91,19 +91,21 @@ bool PlayerModels::CheckDependencies() {
 	return ready;
 }
 
-void PlayerModels::SetModelOverride(C_BaseEntity *entity, const model_t *&model) {
-	Player player = entity;
+void PlayerModels::SetModelOverride(C_BaseEntity *entity, const model_t *&model)
+{
+	Player* player = Player::AsPlayer(entity);
 
-	if (!player) {
-		if (Entities::CheckEntityBaseclass(entity, "TFRagdoll")) {
-			player = *Entities::GetEntityProp<int *>(entity, { "m_iPlayerIndex" });
-		}
-		else {
+	if (!player)
+	{
+		if (Entities::CheckEntityBaseclass(entity, "TFRagdoll"))
+			player = Player::GetPlayer(*Entities::GetEntityProp<int*>(entity, { "m_iPlayerIndex" }));
+		else
 			return;
-		}
 	}
+	if (!player)
+		return;
 
-	CSteamID playerSteamID = player.GetSteamID();
+	CSteamID playerSteamID = player->GetSteamID();
 	std::stringstream stringstream;
 	std::string playerSteamID64;
 	stringstream << playerSteamID.ConvertToUint64();

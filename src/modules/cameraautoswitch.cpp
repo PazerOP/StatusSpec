@@ -108,25 +108,25 @@ bool CameraAutoSwitch::CheckDependencies() {
 void CameraAutoSwitch::FireGameEvent(IGameEvent *event) {
 	if (enabled->GetBool() && killer->GetBool()) {
 		if (strcmp(event->GetName(), GAME_EVENT_PLAYER_DEATH) == 0) {
-			Player localPlayer = Interfaces::pEngineClient->GetLocalPlayer();
+			Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer());
 
 			if (localPlayer) {
-				if (localPlayer.GetObserverMode() == OBS_MODE_FIXED || localPlayer.GetObserverMode() == OBS_MODE_IN_EYE || localPlayer.GetObserverMode() == OBS_MODE_CHASE) {
-					Player targetPlayer = localPlayer.GetObserverTarget();
+				if (localPlayer->GetObserverMode() == OBS_MODE_FIXED || localPlayer->GetObserverMode() == OBS_MODE_IN_EYE || localPlayer->GetObserverMode() == OBS_MODE_CHASE) {
+					Player* targetPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
 
 					if (targetPlayer) {
-						if (Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("userid")) == targetPlayer->entindex()) {
-							Player killer = Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("attacker"));
+						if (Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("userid")) == targetPlayer->GetEntity()->entindex()) {
+							Player* killer = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("attacker")));
 
 							if (killer) {
 								if (killer_delay->GetFloat() > 0.0f) {
 									if (panel) {
-										panel->SwitchToKiller(killer->entindex(), killer_delay->GetFloat());
+										panel->SwitchToKiller(killer->GetEntity()->entindex(), killer_delay->GetFloat());
 									}
 								}
 								else {
 									try {
-										Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), killer->entindex());
+										Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), killer->GetEntity()->entindex());
 									}
 									catch (bad_pointer &e) {
 										Warning("%s\n", e.what());

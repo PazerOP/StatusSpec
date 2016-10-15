@@ -121,14 +121,16 @@ TeamHealthComparison::Panel::Panel(vgui::Panel *parent, const char *panelName) :
 void TeamHealthComparison::Panel::OnTick() {
 	teamHealthAggregate.clear();
 
-	for (Player player : Player::Iterable()) {
-		if (player) {
-			if (!player.IsAlive()) {
-				continue;
-			}
+	for (Player* player : Player::Iterable())
+	{
+		Assert(player);
+		if (!player)
+			continue;
 
-			teamHealthAggregate[player.GetTeam()] += player.GetHealth();
-		}
+		if (!player->IsAlive())
+			continue;
+
+		teamHealthAggregate[player->GetTeam()] += player->GetHealth();
 	}
 
 	float redPercentage = 0.0f;

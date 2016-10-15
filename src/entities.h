@@ -22,7 +22,7 @@ class RecvTable;
 class Entities {
 public:
 	static bool RetrieveClassPropOffset(std::string className, std::vector<std::string> propertyTree);
-	template <typename T> static T GetEntityProp(IClientEntity *entity, std::vector<std::string> propertyTree) {
+	template <typename T> __forceinline static T GetEntityProp(IClientEntity *entity, std::vector<std::string> propertyTree) {
 		return reinterpret_cast<T>(GetEntityProp(entity, propertyTree));
 	};
 

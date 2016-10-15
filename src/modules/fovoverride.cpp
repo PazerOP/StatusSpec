@@ -76,17 +76,18 @@ bool FOVOverride::InToolModeOverride() {
 	RETURN_META_VALUE(MRES_OVERRIDE, true);
 }
 
-bool FOVOverride::SetupEngineViewOverride(Vector &origin, QAngle &angles, float &fov) {
-	Player localPlayer = Interfaces::pEngineClient->GetLocalPlayer();
+bool FOVOverride::SetupEngineViewOverride(Vector &origin, QAngle &angles, float &fov)
+{
+	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer());
 
 	if (localPlayer) {
-		if (localPlayer.CheckCondition(TFCond_Zoomed)) {
+		if (localPlayer->CheckCondition(TFCond_Zoomed)) {
 			RETURN_META_VALUE(MRES_IGNORED, false);
 		}
-		else if (localPlayer.GetObserverMode() == OBS_MODE_IN_EYE) {
-			Player targetPlayer = localPlayer.GetObserverTarget();
+		else if (localPlayer->GetObserverMode() == OBS_MODE_IN_EYE) {
+			Player* targetPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
 
-			if (targetPlayer && targetPlayer.CheckCondition(TFCond_Zoomed)) {
+			if (targetPlayer && targetPlayer->CheckCondition(TFCond_Zoomed)) {
 				RETURN_META_VALUE(MRES_IGNORED, false);
 			}
 		}

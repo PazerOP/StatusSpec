@@ -84,26 +84,27 @@ bool LocalPlayer::CheckDependencies() {
 }
 
 int LocalPlayer::GetLocalPlayerIndexOverride() {
-	if (enabled->GetBool()) {
-		Player localPlayer = player->GetInt();
+	if (enabled->GetBool())
+	{
+		Player* localPlayer = Player::GetPlayer(player->GetInt());
 
-		if (localPlayer) {
+		if (localPlayer)
 			return player->GetInt();
-		}
 	}
 
 	return Funcs::CallFunc_GetLocalPlayerIndex();
 }
 
-void LocalPlayer::SetToCurrentTarget() {
-	Player localPlayer = Interfaces::pEngineClient->GetLocalPlayer();
+void LocalPlayer::SetToCurrentTarget()
+{
+	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer() - 1);
 
 	if (localPlayer) {
-		if (localPlayer.GetObserverMode() == OBS_MODE_FIXED || localPlayer.GetObserverMode() == OBS_MODE_IN_EYE || localPlayer.GetObserverMode() == OBS_MODE_CHASE) {
-			Player targetPlayer = localPlayer.GetObserverTarget();
+		if (localPlayer->GetObserverMode() == OBS_MODE_FIXED || localPlayer->GetObserverMode() == OBS_MODE_IN_EYE || localPlayer->GetObserverMode() == OBS_MODE_CHASE) {
+			Player* targetPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
 
 			if (targetPlayer) {
-				player->SetValue(targetPlayer->entindex());
+				player->SetValue(targetPlayer->GetEntity()->entindex());
 
 				return;
 			}

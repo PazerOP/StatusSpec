@@ -72,9 +72,10 @@ bool PlayerAliases::CheckDependencies() {
 bool PlayerAliases::GetPlayerInfoOverride(int ent_num, player_info_t *pinfo) {
 	bool result = Funcs::CallFunc_IVEngineClient_GetPlayerInfo(Interfaces::pEngineClient, ent_num, pinfo);
 
-	Player player = ent_num;
+	Player* player = Player::GetPlayer(ent_num - 1);
 
-	if (!player) {
+	if (!player) 
+	{
 		RETURN_META_VALUE(MRES_IGNORED, false);
 	}
 
@@ -93,7 +94,7 @@ bool PlayerAliases::GetPlayerInfoOverride(int ent_num, player_info_t *pinfo) {
 	}
 
 	CSteamID playerSteamID = CSteamID(pinfo->friendsID, 1, universe, k_EAccountTypeIndividual);
-	TFTeam team = player.GetTeam();
+	TFTeam team = player->GetTeam();
 
 	std::string playerAlias = GetAlias(playerSteamID, pinfo->name);
 
@@ -152,8 +153,13 @@ int PlayerAliases::GetCurrentGamePlayers(const char *partial, char commands[COMM
 	std::string command;
 	std::getline(ss, command, ' ');
 
-	for (Player player : Player::Iterable()) {
-		CSteamID playerSteamID = player.GetSteamID();
+	for (Player* player : Player::Iterable())
+	{
+		Assert(player);
+		if (!player)
+			continue;
+
+		CSteamID playerSteamID = player->GetSteamID();
 			
 		if (playerSteamID.IsValid()) {
 			V_snprintf(commands[playerCount], COMMAND_COMPLETION_ITEM_LENGTH, "%s %llu", command.c_str(), playerSteamID.ConvertToUint64());

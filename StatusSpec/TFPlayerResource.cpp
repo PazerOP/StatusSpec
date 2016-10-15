@@ -3,6 +3,7 @@
 #include "../src/common.h"
 #include "../src/ifaces.h"
 #include "../src/entities.h"
+#include "../src/player.h"
 
 #include <cbase.h>
 #include <icliententitylist.h>
@@ -51,8 +52,8 @@ bool TFPlayerResource::IsAlive(int playerEntIndex)
 	char buffer[8];
 	sprintf_s(buffer, "%.3i", playerEntIndex);
 
-	auto result = *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(m_PlayerResourceEntity.Get()), { "m_bAlive", buffer });
-	return result == 1;
+	auto result = *Entities::GetEntityProp<bool*>(dynamic_cast<C_BaseEntity *>(m_PlayerResourceEntity.Get()), { "m_bAlive", buffer });
+	return result;
 }
 
 int TFPlayerResource::GetMaxHealth(int playerEntIndex)

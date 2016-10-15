@@ -286,13 +286,16 @@ void ProjectileOutlines::ToggleEnabled(IConVar *var, const char *pOldValue, floa
 	}
 }
 
-ProjectileOutlines::Panel::Panel(vgui::Panel *parent, const char *panelName, std::function<void()> updateFunction, std::function<void(Vector)> updateFadesFunction) : vgui::Panel(parent, panelName) {
+ProjectileOutlines::Panel::Panel(vgui::Panel *parent, const char *panelName, std::function<void()> updateFunction, std::function<void(Vector)> updateFadesFunction) : vgui::Panel(parent, panelName)
+{
 	g_pVGui->AddTickSignal(GetVPanel());
 
-	try {
+	try
+	{
 		doPostScreenSpaceEffectsHook = Funcs::AddHook_IClientMode_DoPostScreenSpaceEffects(Interfaces::GetClientMode(), SH_MEMBER(this, &ProjectileOutlines::Panel::DoPostScreenSpaceEffectsHook), false);
 	}
-	catch (bad_pointer &e) {
+	catch (bad_pointer &e)
+	{
 		Warning("%s\n", e.what());
 		doPostScreenSpaceEffectsHook = 0;
 	}
@@ -301,12 +304,16 @@ ProjectileOutlines::Panel::Panel(vgui::Panel *parent, const char *panelName, std
 	updateGlowFades = updateFadesFunction;
 }
 
-void ProjectileOutlines::Panel::OnTick() {
-	if (!doPostScreenSpaceEffectsHook) {
-		try {
+void ProjectileOutlines::Panel::OnTick()
+{
+	if (!doPostScreenSpaceEffectsHook)
+	{
+		try
+		{
 			doPostScreenSpaceEffectsHook = Funcs::AddHook_IClientMode_DoPostScreenSpaceEffects(Interfaces::GetClientMode(), SH_MEMBER(this, &ProjectileOutlines::Panel::DoPostScreenSpaceEffectsHook), false);
 		}
-		catch (bad_pointer &e) {
+		catch (bad_pointer &e)
+		{
 			Warning("%s\n", e.what());
 		}
 	}
@@ -318,7 +325,8 @@ GlowManager *ProjectileOutlines::Panel::GetGlowManager() {
 	return &glowManager;
 }
 
-bool ProjectileOutlines::Panel::DoPostScreenSpaceEffectsHook(const CViewSetup *pSetup) {
+bool ProjectileOutlines::Panel::DoPostScreenSpaceEffectsHook(const CViewSetup *pSetup)
+{
 	updateGlowFades(pSetup->origin);
 
 	glowManager.RenderGlowEffects(pSetup);

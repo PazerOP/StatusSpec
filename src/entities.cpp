@@ -20,40 +20,40 @@
 
 std::unordered_map<std::string, std::unordered_map<std::string, int>> Entities::classPropOffsets;
 
-bool Entities::RetrieveClassPropOffset(std::string className, std::vector<std::string> propertyTree) {
+bool Entities::RetrieveClassPropOffset(std::string className, std::vector<std::string> propertyTree)
+{
 	std::string propertyString = ConvertTreeToString(propertyTree);
 
-	if (classPropOffsets[className].find(propertyString) != classPropOffsets[className].end()) {
+	if (classPropOffsets[className].find(propertyString) != classPropOffsets[className].end())
 		return true;
-	}
 
 	ClientClass *cc = Interfaces::pClientDLL->GetAllClasses();
 
-	while (cc) {
-		if (className.compare(cc->GetName()) == 0) {
+	while (cc)
+	{
+		if (className.compare(cc->GetName()) == 0)
+		{
 			RecvTable *table = cc->m_pRecvTable;
 
 			int offset = 0;
 			RecvProp *prop = nullptr;
 
-			if (table) {
-				for (std::string propertyName : propertyTree) {
+			if (table)
+			{
+				for (std::string propertyName : propertyTree)
+				{
 					int subOffset = 0;
 
-					if (prop && prop->GetType() == DPT_DataTable) {
+					if (prop && prop->GetType() == DPT_DataTable)
 						table = prop->GetDataTable();
-					}
 
-					if (!table) {
+					if (!table)
 						return false;
-					}
 
-					if (GetSubProp(table, propertyName.c_str(), prop, subOffset)) {
+					if (GetSubProp(table, propertyName.c_str(), prop, subOffset))
 						offset += subOffset;
-					}
-					else {
+					else
 						return false;
-					}
 
 					table = nullptr;
 				}

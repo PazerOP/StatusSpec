@@ -1,8 +1,12 @@
 #pragma once
 #include <memory>
 #include <ehandle.h>
+#include <vector>
+
+#include "shareddefs.h"
 
 class C_BaseEntity;
+class Player;
 
 class TFPlayerResource final
 {

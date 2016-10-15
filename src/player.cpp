@@ -28,106 +28,49 @@
 #include "ifaces.h"
 #include "../StatusSpec/TFPlayerResource.h"
 
-Player::Player(int entindex) {
-	playerEntity = Interfaces::pClientEntityList->GetClientEntity(entindex);
-}
-
-Player::Player(IClientEntity *entity) {
-	playerEntity = entity;
-}
-
-Player& Player::operator=(int entindex) {
-	playerEntity = Interfaces::pClientEntityList->GetClientEntity(entindex);
-
-	return *this;
-}
-
-Player& Player::operator=(IClientEntity *entity) {
-	playerEntity = entity;
-
-	return *this;
-}
-
-Player& Player::operator=(const Player &player) {
-	if (this == &player) {
-		return *this;
+std::unique_ptr<Player> Player::s_Players[MAX_PLAYERS];
+Player* Player::GetPlayer(int entIndex)
+{
+	if (entIndex <= 0 || entIndex > Interfaces::pEngineTool->GetMaxClients())
+	{
+		PRINT_TAG();
+		Warning("Out of range playerEntIndex %i in %s()\n", entIndex, __FUNCTION__);
+		return nullptr;
 	}
 
-	playerEntity = player.playerEntity;
+	Player* p = s_Players[entIndex].get();
+	if (!p || !p->IsValid())
+	{
+		IClientEntity* playerEntity = Interfaces::pClientEntityList->GetClientEntity(entIndex);
+		if (!playerEntity)
+			return nullptr;
 
-	return *this;
+		s_Players[entIndex] = std::unique_ptr<Player>(new Player());
+		p = s_Players[entIndex].get();
+		p->playerEntity = playerEntity;
+	}
+
+	if (!p || !p->IsValid())
+		return nullptr;
+
+	return p;
 }
 
-bool Player::operator==(int entindex) const {
-	return IsEqualTo(Player(entindex));
+Player* Player::AsPlayer(IClientEntity* entity)
+{
+	if (!entity)
+		return nullptr;
+
+	int entIndex = entity->entindex();
+	if (entIndex >= 1 && entIndex <= Interfaces::pEngineTool->GetMaxClients())
+		return GetPlayer(entity->entindex());
+
+	return nullptr;
 }
 
-bool Player::operator==(IClientEntity *entity) const {
-	return IsEqualTo(Player(entity));
-}
-
-bool Player::operator==(const Player &player) const {
-	return IsEqualTo(player);
-}
-
-bool Player::operator!=(int entindex) const {
-	return IsNotEqualTo(Player(entindex));
-}
-
-bool Player::operator!=(IClientEntity *entity) const {
-	return IsNotEqualTo(Player(entity));
-}
-
-bool Player::operator!=(const Player &player) const {
-	return IsNotEqualTo(player);
-}
-
-bool Player::operator<(int entindex) const {
-	return IsLessThan(Player(entindex));
-}
-
-bool Player::operator<(IClientEntity *entity) const {
-	return IsLessThan(Player(entity));
-}
-
-bool Player::operator<(const Player &player) const {
-	return IsLessThan(player);
-}
-
-bool Player::operator<=(int entindex) const {
-	return IsLessThanOrEqualTo(Player(entindex));
-}
-
-bool Player::operator<=(IClientEntity *entity) const {
-	return IsLessThanOrEqualTo(Player(entity));
-}
-
-bool Player::operator<=(const Player &player) const {
-	return IsLessThanOrEqualTo(player);
-}
-
-bool Player::operator>(int entindex) const {
-	return IsGreaterThan(Player(entindex));
-}
-
-bool Player::operator>(IClientEntity *entity) const {
-	return IsGreaterThan(Player(entity));
-}
-
-bool Player::operator>(const Player &player) const {
-	return IsGreaterThan(player);
-}
-
-bool Player::operator>=(int entindex) const {
-	return IsGreaterThanOrEqualTo(Player(entindex));
-}
-
-bool Player::operator>=(IClientEntity *entity) const {
-	return IsGreaterThanOrEqualTo(Player(entity));
-}
-
-bool Player::operator>=(const Player &player) const {
-	return IsGreaterThanOrEqualTo(player);
+Player::Player()
+{
+	Init();
 }
 
 bool Player::IsEqualTo(const Player &player) const {
@@ -136,10 +79,6 @@ bool Player::IsEqualTo(const Player &player) const {
 	}
 
 	return false;
-}
-
-bool Player::IsNotEqualTo(const Player &player) const {
-	return !IsEqualTo(player);
 }
 
 bool Player::IsLessThan(const Player &player) const {
@@ -175,10 +114,6 @@ bool Player::IsLessThan(const Player &player) const {
 	return false;
 }
 
-bool Player::IsLessThanOrEqualTo(const Player &player) const {
-	return IsEqualTo(player) || IsLessThan(player);
-}
-
 bool Player::IsGreaterThan(const Player &player) const {
 	if (!IsValid()) {
 		return false;
@@ -212,28 +147,23 @@ bool Player::IsGreaterThan(const Player &player) const {
 	return false;
 }
 
-bool Player::IsGreaterThanOrEqualTo(const Player &player) const {
-	return IsEqualTo(player) || IsGreaterThan(player);
-}
+bool Player::IsValid() const
+{
+	if (!playerEntity.IsValid())
+		return false;
 
-Player::operator bool() const {
-	return IsValid();
-}
+	if (!playerEntity.Get())
+		return false;
 
-bool Player::IsValid() const {
-	return playerEntity.IsValid() && playerEntity.Get() && playerEntity->entindex() >= 1 && playerEntity->entindex() <= Interfaces::pEngineTool->GetMaxClients() && Entities::CheckEntityBaseclass(playerEntity, "TFPlayer");
-}
+	if (playerEntity->entindex() < 1 || playerEntity->entindex() > Interfaces::pEngineTool->GetMaxClients())
+		return false;
 
-Player::operator IClientEntity *() const {
-	return playerEntity;
-}
+	// pazer: this is slow, and theoretically it should be impossible to create
+	// Player objects with incorrect entity types
+	//if (!Entities::CheckEntityBaseclass(playerEntity, "TFPlayer"))
+	//	return false;
 
-IClientEntity *Player::operator->() const {
-	return playerEntity;
-}
-
-IClientEntity *Player::GetEntity() const {
-	return playerEntity;
+	return true;
 }
 
 bool Player::CheckCondition(TFCond condition) const {
@@ -275,11 +205,15 @@ bool Player::CheckCondition(TFCond condition) const {
 	return false;
 }
 
-TFClassType Player::GetClass() const {
+TFClassType Player::GetClass() const
+{
 	if (IsValid())
 	{
-		TFClassType retVal = (TFClassType)*Entities::GetEntityProp<int *>(playerEntity.Get(), { "m_iClass" });
-		return retVal;
+		if (CacheNeedsRefresh() || !m_CachedClass)
+			m_CachedClass = (TFClassType*)Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iClass" });
+
+		if (m_CachedClass)
+			return *m_CachedClass;
 	}
 
 	return TFClass_Unknown;
@@ -288,7 +222,13 @@ TFClassType Player::GetClass() const {
 int Player::GetHealth() const
 {
 	if (IsValid())
-		return *Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iHealth" });
+	{
+		if (CacheNeedsRefresh() || !m_CachedHealth)
+			m_CachedHealth = Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iHealth" });
+
+		if (m_CachedHealth)
+			return *m_CachedHealth;
+	}
 
 	return 0;
 }
@@ -320,16 +260,54 @@ std::string Player::GetName() const {
 int Player::GetObserverMode() const
 {
 	if (IsValid())
-		return *Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iObserverMode" });
+	{
+		if (CacheNeedsRefresh() || !m_CachedObserverMode)
+			 m_CachedObserverMode = Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iObserverMode" });
+
+		if (m_CachedObserverMode)
+			return *m_CachedObserverMode;
+	}
 
 	return OBS_MODE_NONE;
 }
 
-C_BaseEntity *Player::GetObserverTarget() const {
+C_BaseEntity *Player::GetObserverTarget() const
+{
 	if (IsValid())
-		return Entities::GetEntityProp<EHANDLE*>(playerEntity.Get(), { "m_hObserverTarget" })->Get();
+	{
+		if (CacheNeedsRefresh() || !m_CachedObserverTarget)
+			m_CachedObserverTarget = Entities::GetEntityProp<EHANDLE*>(playerEntity.Get(), { "m_hObserverTarget" });
+
+		if (m_CachedObserverTarget)
+			return m_CachedObserverTarget->Get();
+	}
 
 	return playerEntity->GetBaseEntity();
+}
+
+bool Player::CacheNeedsRefresh() const
+{
+	void* current = playerEntity.Get();
+	if (current != m_CachedPlayerEntity)
+	{
+		m_CachedPlayerEntity = current;
+		return true;
+	}
+
+	return false;
+}
+
+void Player::Init()
+{
+	m_CachedPlayerEntity = nullptr;
+	m_CachedTeam = nullptr;
+	m_CachedClass = nullptr;
+	m_CachedHealth = nullptr;
+	m_CachedObserverMode = nullptr;
+	m_CachedObserverTarget = nullptr;
+
+	for (int i = 0; i < MAX_WEAPONS; i++)
+		m_CachedWeapons[i] = nullptr;
 }
 
 CSteamID Player::GetSteamID() const {
@@ -366,12 +344,17 @@ TFTeam Player::GetTeam() const
 {
 	if (IsValid())
 	{
-		C_BaseEntity* entity = dynamic_cast<C_BaseEntity *>(playerEntity.Get());
-		if (!entity)
-			return TFTeam_Unassigned;
+		if (CacheNeedsRefresh() || !m_CachedTeam)
+		{
+			C_BaseEntity* entity = dynamic_cast<C_BaseEntity *>(playerEntity.Get());
+			if (!entity)
+				return TFTeam_Unassigned;
 
-		TFTeam team = (TFTeam)*Entities::GetEntityProp<int*>(entity, { "m_iTeamNum" });
-		return team;
+			m_CachedTeam = (TFTeam*)Entities::GetEntityProp<int*>(entity, { "m_iTeamNum" });
+		}
+
+		if (m_CachedTeam)
+			return *m_CachedTeam;
 	}
 
 	return TFTeam_Unassigned;
@@ -392,18 +375,31 @@ int Player::GetUserID() const
 
 C_BaseCombatWeapon *Player::GetWeapon(int i) const
 {
+	if (i < 0 || i >= MAX_WEAPONS)
+	{
+		PRINT_TAG();
+		Warning("Out of range index %i in %s\n", i, __FUNCTION__);
+		return nullptr;
+	}
+
 	if (IsValid())
 	{
-		char buffer[8];
-		sprintf_s(buffer, "%.3i", i);
+		if (CacheNeedsRefresh() || !m_CachedWeapons[i])
+		{
+			char buffer[8];
+			sprintf_s(buffer, "%.3i", i);
+			m_CachedWeapons[i] = Entities::GetEntityProp<CHandle<C_BaseCombatWeapon>*>(playerEntity.Get(), { "m_hMyWeapons", buffer });
+		}
 
-		return Entities::GetEntityProp<CHandle<C_BaseCombatWeapon>*>(playerEntity.Get(), { "m_hMyWeapons", buffer })->Get();
+		if (m_CachedWeapons[i])
+			return m_CachedWeapons[i]->Get();
 	}
 
 	return nullptr;
 }
 
-bool Player::IsAlive() const {
+bool Player::IsAlive() const
+{
 	if (IsValid()) 
 	{
 		auto playerResource = TFPlayerResource::GetPlayerResource();
@@ -413,23 +409,16 @@ bool Player::IsAlive() const {
 	return false;
 }
 
-Player::Iterator::Iterator(const Player::Iterator& old) {
-	index = old.index;
-}
+Player::Iterator& Player::Iterator::operator++()
+{
+	for (int i = index + 1; i < Interfaces::pEngineTool->GetMaxClients(); i++)
+	{
+		if (!GetPlayer(i) || !GetPlayer(i)->IsValid())
+			continue;
 
-Player::Iterator& Player::Iterator::operator=(const Player::Iterator& old) {
-	index = old.index;
+		index = i;
 
-	return  *this;
-};
-
-Player::Iterator& Player::Iterator::operator++() {
-	for (int i = index + 1; i <= Interfaces::pEngineTool->GetMaxClients(); i++) {
-		if (Player(i)) {
-			index = i;
-
-			return *this;
-		}
+		return *this;
 	}
 
 	index = Interfaces::pEngineTool->GetMaxClients() + 1;
@@ -437,20 +426,17 @@ Player::Iterator& Player::Iterator::operator++() {
 	return *this;
 };
 
-Player Player::Iterator::operator*() const {
-	return Player(index);
+void swap(Player::Iterator& lhs, Player::Iterator& rhs)
+{
+	std::swap(lhs.index, rhs.index);
 }
 
-void swap(Player::Iterator& lhs, Player::Iterator& rhs) {
-	using std::swap;
-	swap(lhs.index, rhs.index);
-}
-
-Player::Iterator Player::Iterator::operator++(int) {
+Player::Iterator Player::Iterator::operator++(int)
+{
 	Player::Iterator current(*this);
 
 	for (int i = index + 1; i <= Interfaces::pEngineTool->GetMaxClients(); i++) {
-		if (Player(i)) {
+		if (GetPlayer(i)) {
 			index = i;
 
 			return current;
@@ -462,43 +448,41 @@ Player::Iterator Player::Iterator::operator++(int) {
 	return current;
 }
 
-Player *Player::Iterator::operator->() const {
-	return new Player(index);
-}
+Player* Player::Iterator::operator*() const { return GetPlayer(index); }
+//Player *Player::Iterator::operator->() const { return GetPlayer(index); }
 
-bool operator==(const Player::Iterator& lhs, const Player::Iterator& rhs) {
-	return lhs.index == rhs.index;
-}
+bool operator==(const Player::Iterator& lhs, const Player::Iterator& rhs) { return lhs.index == rhs.index; }
+bool operator!=(const Player::Iterator& lhs, const Player::Iterator& rhs) { return lhs.index != rhs.index; }
 
-bool operator!=(const Player::Iterator& lhs, const Player::Iterator& rhs) {
-	return lhs.index != rhs.index;
-}
+Player::Iterator::Iterator()
+{
+	for (int i = 1; i <= Interfaces::pEngineTool->GetMaxClients(); i++)
+	{
+		Player* p = GetPlayer(i);
+		if (!p || !p->IsValid())
+			continue;
 
-Player::Iterator::Iterator() {
-	for (int i = 1; i <= Interfaces::pEngineTool->GetMaxClients(); i++) {
-		if (Player(i)) {
-			index = i;
-
-			return;
-		}
+		index = i;
+		return;
 	}
 
 	index = Interfaces::pEngineTool->GetMaxClients() + 1;
-
 	return;
 }
 
-Player::Iterator& Player::Iterator::operator--() {
-	for (int i = index - 1; i >= 1; i++) {
-		if (Player(i)) {
-			index = i;
+Player::Iterator& Player::Iterator::operator--()
+{
+	for (int i = index - 1; i >= 0; i++)
+	{
+		Player* p = GetPlayer(i);
+		if (!p || !p->IsValid())
+			continue;
 
-			return *this;
-		}
+		index = i;
+		return *this;
 	}
 
 	index = 0;
-
 	return *this;
 }
 
@@ -506,7 +490,7 @@ Player::Iterator Player::Iterator::operator--(int) {
 	Player::Iterator current(*this);
 
 	for (int i = index - 1; i >= 1; i++) {
-		if (Player(i)) {
+		if (GetPlayer(i)) {
 			index = i;
 
 			return current;

@@ -255,27 +255,33 @@ void CameraTools::SpecPlayer(const CCommand &command) {
 									if (dialogVariables) {
 										const char *name = dialogVariables->GetString("playername");
 
-										for (Player player : Player::Iterable()) {
-											if (player.GetName().compare(name) == 0) {
+										for (Player* player : Player::Iterable())
+										{
+											Assert(player);
+											if (!player)
+												continue;
+
+											if (player->GetName().compare(name) == 0)
+											{
 												int baseX = 0;
 												int baseY = 0;
 												int deltaX = 0;
 												int deltaY = 0;
 
-												if (player.GetTeam() == TFTeam_Red) {
-													if (atoi(command.Arg(1)) != TFTeam_Red) {
+												if (player->GetTeam() == TFTeam_Red)
+												{
+													if (atoi(command.Arg(1)) != TFTeam_Red)
 														continue;
-													}
 
 													baseX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_base_offset_x"));
 													baseY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_base_y"));
 													deltaX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_delta_x"));
 													deltaY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_delta_y"));
 												}
-												else if (player.GetTeam() == TFTeam_Blue) {
-													if (atoi(command.Arg(1)) != TFTeam_Blue) {
+												else if (player->GetTeam() == TFTeam_Blue)
+												{
+													if (atoi(command.Arg(1)) != TFTeam_Blue)
 														continue;
-													}
 
 													baseX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_base_offset_x"));
 													baseY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_base_y"));
@@ -291,23 +297,18 @@ void CameraTools::SpecPlayer(const CCommand &command) {
 												int relativeX = x - baseX;
 												int relativeY = y - baseY;
 
-												if (deltaX != 0 && relativeX / deltaX != position) {
+												if (deltaX != 0 && relativeX / deltaX != position)
 													continue;
-												}
-												else if (relativeX != 0 && deltaX == 0) {
+												else if (relativeX != 0 && deltaX == 0)
 													continue;
-												}
 
-												if (deltaY != 0 && relativeY / deltaY != position) {
+												if (deltaY != 0 && relativeY / deltaY != position)
 													continue;
-												}
-												else if (relativeY != 0 && deltaY == 0) {
+												else if (relativeY != 0 && deltaY == 0)
 													continue;
-												}
 
-												if (!spec_player_alive->GetBool() || player.IsAlive()) {
-													Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->entindex());
-												}
+												if (!spec_player_alive->GetBool() || player->IsAlive())
+													Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->GetEntity()->entindex());
 
 												return;
 											}
@@ -328,21 +329,27 @@ void CameraTools::SpecPlayer(const CCommand &command) {
 			Warning("%s\n", e.what());
 		}
 	}
-	else if (command.ArgC() == 2 && IsInteger(command.Arg(1))) {
-		Player player = atoi(command.Arg(1));
+	else if (command.ArgC() == 2 && IsInteger(command.Arg(1)))
+	{
+		Player* player = Player::GetPlayer(atoi(command.Arg(1)));
 
-		if (player) {
-			if (!spec_player_alive->GetBool() || player.IsAlive()) {
-				try {
-					Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->entindex());
+		if (player)
+		{
+			if (!spec_player_alive->GetBool() || player->IsAlive())
+			{
+				try
+				{
+					Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->GetEntity()->entindex());
 				}
-				catch (bad_pointer &e) {
+				catch (bad_pointer &e)
+				{
 					Warning("%s\n", e.what());
 				}
 			}
 		}
 	}
-	else {
+	else
+	{
 		Warning("Usage: statusspec_cameratools_spec_player <team> <position> || statusspec_cameratools_spec_player <index>\n");
 
 		return;

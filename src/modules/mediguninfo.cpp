@@ -223,98 +223,120 @@ void MedigunInfo::MainPanel::LoadControlSettings(const char *dialogResourceName,
 	PostActionSignal(new KeyValues("ReloadControlSettings"));
 }
 
-void MedigunInfo::MainPanel::OnTick() {
+void MedigunInfo::MainPanel::OnTick()
+{
 	vgui::EditablePanel::OnTick();
 
 	size_t bluMediguns = 0;
 	size_t redMediguns = 0;
-	
-	for (Player player : Player::Iterable()) 
+
+	for (Player* player : Player::Iterable())
 	{
-		TFClassType cls = player.GetClass();
-		TFTeam team = player.GetTeam();
-		if (cls == TFClass_Medic && (team == TFTeam_Blue || team == TFTeam_Red))
+		Assert(player);
+		if (!player)
+			continue;
+
+		TFClassType cls = player->GetClass();
+		if (cls != TFClass_Medic)
+			continue;
+
+		TFTeam team = player->GetTeam();
+		if (team != TFTeam_Blue && team != TFTeam_Red)
+			continue;
+
+		for (int weaponIndex = 0; weaponIndex < MAX_WEAPONS; weaponIndex++)
 		{
-			for (int weaponIndex = 0; weaponIndex < MAX_WEAPONS; weaponIndex++) {
-				C_BaseCombatWeapon *weapon = player.GetWeapon(weaponIndex);
+			C_BaseCombatWeapon *weapon = player->GetWeapon(weaponIndex);
 
-				if (weapon && Entities::CheckEntityBaseclass(weapon, "WeaponMedigun")) {
-					MedigunPanel *medigunPanel = nullptr;
-					int x, y;
+			if (weapon && Entities::CheckEntityBaseclass(weapon, "WeaponMedigun"))
+			{
+				MedigunPanel *medigunPanel = nullptr;
+				int x, y;
 
-					if (player.GetTeam() == TFTeam_Red) {
-						redMediguns++;
+				if (team == TFTeam_Red)
+				{
+					redMediguns++;
 
-						if (redMediguns > redMedigunPanels.size()) {
-							medigunPanel = new MedigunPanel(this, "MedigunPanel");
-							AddActionSignalTarget(medigunPanel);
-							redMedigunPanels.push_back(medigunPanel);
-						}
-						else {
-							medigunPanel = redMedigunPanels.at(redMediguns - 1);
-						}
-
-						x = redBaseX + (redOffsetX * (redMediguns - 1));
-						y = redBaseY + (redOffsetY * (redMediguns - 1));
+					if (redMediguns > redMedigunPanels.size())
+					{
+						medigunPanel = new MedigunPanel(this, "MedigunPanel");
+						AddActionSignalTarget(medigunPanel);
+						redMedigunPanels.push_back(medigunPanel);
 					}
-					else if (player.GetTeam() == TFTeam_Blue) {
-						bluMediguns++;
-
-						if (bluMediguns > bluMedigunPanels.size()) {
-							medigunPanel = new MedigunPanel(this, "MedigunPanel");
-							AddActionSignalTarget(medigunPanel);
-							bluMedigunPanels.push_back(medigunPanel);
-						}
-						else {
-							medigunPanel = bluMedigunPanels.at(bluMediguns - 1);
-						}
-
-						x = bluBaseX + (bluOffsetX * (bluMediguns - 1));
-						y = bluBaseY + (bluOffsetY * (bluMediguns - 1));
+					else
+					{
+						medigunPanel = redMedigunPanels.at(redMediguns - 1);
 					}
 
-					KeyValues *medigunInfo = new KeyValues("MedigunInfo");
-
-					int itemDefinitionIndex = *Entities::GetEntityProp<int *>(weapon, { "m_iItemDefinitionIndex" });
-					TFMedigun type = TFMedigun_Unknown;
-					if (itemDefinitionIndex == 29 || itemDefinitionIndex == 211 || itemDefinitionIndex == 663 || itemDefinitionIndex == 796 || itemDefinitionIndex == 805 || itemDefinitionIndex == 885 || itemDefinitionIndex == 894 || itemDefinitionIndex == 903 || itemDefinitionIndex == 912 || itemDefinitionIndex == 961 || itemDefinitionIndex == 970 || itemDefinitionIndex == 15008 || itemDefinitionIndex == 15010 || itemDefinitionIndex == 15025 || itemDefinitionIndex == 15039 || itemDefinitionIndex == 15050) {
-						type = TFMedigun_MediGun;
-					}
-					else if (itemDefinitionIndex == 35) {
-						type = TFMedigun_Kritzkrieg;
-					}
-					else if (itemDefinitionIndex == 411) {
-						type = TFMedigun_QuickFix;
-					}
-					else if (itemDefinitionIndex == 998) {
-						type = TFMedigun_Vaccinator;
-					}
-
-					float level = *Entities::GetEntityProp<float *>(weapon, { "m_flChargeLevel" });
-
-					medigunInfo->SetBool("alive", player.IsAlive());
-					medigunInfo->SetInt("charges", type == TFMedigun_Vaccinator ? int(floor(level * 4.0f)) : int(floor(level)));
-					medigunInfo->SetFloat("level", level);
-					medigunInfo->SetInt("medigun", type);
-					medigunInfo->SetBool("released", *Entities::GetEntityProp<bool *>(weapon, { "m_bChargeRelease" }));
-					medigunInfo->SetInt("resistType", *Entities::GetEntityProp<int *>(weapon, { "m_nChargeResistType" }));
-					medigunInfo->SetInt("team", player.GetTeam());
-
-					PostMessage(medigunPanel, medigunInfo);
-					medigunPanel->SetPos(x, y);
-
-					break;
+					x = redBaseX + (redOffsetX * (redMediguns - 1));
+					y = redBaseY + (redOffsetY * (redMediguns - 1));
 				}
+				else if (team == TFTeam_Blue)
+				{
+					bluMediguns++;
+
+					if (bluMediguns > bluMedigunPanels.size())
+					{
+						medigunPanel = new MedigunPanel(this, "MedigunPanel");
+						AddActionSignalTarget(medigunPanel);
+						bluMedigunPanels.push_back(medigunPanel);
+					}
+					else
+					{
+						medigunPanel = bluMedigunPanels.at(bluMediguns - 1);
+					}
+
+					x = bluBaseX + (bluOffsetX * (bluMediguns - 1));
+					y = bluBaseY + (bluOffsetY * (bluMediguns - 1));
+				}
+
+				KeyValues *medigunInfo = new KeyValues("MedigunInfo");
+
+				int itemDefinitionIndex = *Entities::GetEntityProp<int *>(weapon, { "m_iItemDefinitionIndex" });
+				TFMedigun type = TFMedigun_Unknown;
+				if (itemDefinitionIndex == 29 || itemDefinitionIndex == 211 || itemDefinitionIndex == 663 || itemDefinitionIndex == 796 || itemDefinitionIndex == 805 || itemDefinitionIndex == 885 || itemDefinitionIndex == 894 || itemDefinitionIndex == 903 || itemDefinitionIndex == 912 || itemDefinitionIndex == 961 || itemDefinitionIndex == 970 || itemDefinitionIndex == 15008 || itemDefinitionIndex == 15010 || itemDefinitionIndex == 15025 || itemDefinitionIndex == 15039 || itemDefinitionIndex == 15050)
+				{
+					type = TFMedigun_MediGun;
+				}
+				else if (itemDefinitionIndex == 35)
+				{
+					type = TFMedigun_Kritzkrieg;
+				}
+				else if (itemDefinitionIndex == 411)
+				{
+					type = TFMedigun_QuickFix;
+				}
+				else if (itemDefinitionIndex == 998)
+				{
+					type = TFMedigun_Vaccinator;
+				}
+
+				float level = *Entities::GetEntityProp<float *>(weapon, { "m_flChargeLevel" });
+
+				medigunInfo->SetBool("alive", player->IsAlive());
+				medigunInfo->SetInt("charges", type == TFMedigun_Vaccinator ? int(floor(level * 4.0f)) : int(floor(level)));
+				medigunInfo->SetFloat("level", level);
+				medigunInfo->SetInt("medigun", type);
+				medigunInfo->SetBool("released", *Entities::GetEntityProp<bool *>(weapon, { "m_bChargeRelease" }));
+				medigunInfo->SetInt("resistType", *Entities::GetEntityProp<int *>(weapon, { "m_nChargeResistType" }));
+				medigunInfo->SetInt("team", team);
+
+				PostMessage(medigunPanel, medigunInfo);
+				medigunPanel->SetPos(x, y);
+
+				break;
 			}
 		}
 	}
 
-	while (redMediguns < redMedigunPanels.size()) {
+	while (redMediguns < redMedigunPanels.size())
+	{
 		delete redMedigunPanels.back();
 		redMedigunPanels.pop_back();
 	}
-	
-	while (bluMediguns < bluMedigunPanels.size()) {
+
+	while (bluMediguns < bluMedigunPanels.size())
+	{
 		delete bluMedigunPanels.back();
 		bluMedigunPanels.pop_back();
 	}
