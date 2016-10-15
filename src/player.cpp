@@ -26,6 +26,7 @@
 #include "entities.h"
 #include "exceptions.h"
 #include "ifaces.h"
+#include "../StatusSpec/TFPlayerResource.h"
 
 Player::Player(int entindex) {
 	playerEntity = Interfaces::pClientEntityList->GetClientEntity(entindex);
@@ -399,7 +400,10 @@ C_BaseCombatWeapon *Player::GetWeapon(int i) const {
 bool Player::IsAlive() const {
 	if (IsValid()) 
 	{
-		return *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(playerEntity.Get()), { "m_lifeState" }) == LIFE_ALIVE;
+		auto playerResource = TFPlayerResource::GetPlayerResource();
+
+		return playerResource->IsAlive(playerEntity.GetEntryIndex());
+		//return *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(playerEntity.Get()), { "m_lifeState" }) == LIFE_ALIVE;
 	}
 
 	return false;

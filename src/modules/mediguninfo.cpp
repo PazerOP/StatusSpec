@@ -25,6 +25,8 @@
 #include "../funcs.h"
 #include "../ifaces.h"
 #include "../player.h"
+#include "../../StatusSpec/TFPlayerResource.h"
+
 
 class MedigunInfo::MainPanel : public vgui::EditablePanel {
 	DECLARE_CLASS_SIMPLE(MainPanel, vgui::EditablePanel);
@@ -226,7 +228,7 @@ void MedigunInfo::MainPanel::OnTick() {
 
 	size_t bluMediguns = 0;
 	size_t redMediguns = 0;
-
+	
 	for (Player player : Player::Iterable()) 
 	{
 		TFClassType cls = player.GetClass();

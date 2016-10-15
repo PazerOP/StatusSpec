@@ -73,7 +73,8 @@ public:
 	C_BaseCombatWeapon *GetWeapon(int i) const;
 	bool IsAlive() const;
 
-	class Iterator {
+	class Iterator 
+	{
 		friend class Player;
 
 	public:
