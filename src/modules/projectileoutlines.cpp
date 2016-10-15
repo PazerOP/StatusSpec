@@ -177,7 +177,7 @@ Color ProjectileOutlines::GetGlowColor(IClientEntity *entity) {
 	float blue = 255.0f;
 	float alpha = 255.0f;
 
-	TFTeam team = (TFTeam)dynamic_cast<C_BaseEntity *>(entity)->GetTeamNumber();
+	TFTeam team = (TFTeam)*Entities::GetEntityProp<int*>(entity->GetBaseEntity(), { "m_iTeamNum" });
 
 	if (team == TFTeam_Red) {
 		red = colors["red"].color.r();
@@ -195,20 +195,26 @@ Color ProjectileOutlines::GetGlowColor(IClientEntity *entity) {
 	return Color(red, green, blue, alpha);
 }
 
-void ProjectileOutlines::SetGlowEffect(IClientEntity *entity, bool enabled, Vector color, float alpha) {
-	EHANDLE entityHandle = dynamic_cast<C_BaseEntity *>(entity);
+void ProjectileOutlines::SetGlowEffect(IClientEntity *entity, bool enabled, Vector color, float alpha)
+{
+	EHANDLE entityHandle = entity->GetBaseEntity();
 
-	if (enabled) {
-		if (glows.find(entityHandle) == glows.end()) {
+	if (enabled)
+	{
+		if (glows.find(entityHandle) == glows.end())
+		{
 			glows[entityHandle] = new GlowManager::GlowObject(panel->GetGlowManager(), entityHandle.Get(), color, alpha, true, true);
 		}
-		else {
+		else
+		{
 			glows[entityHandle]->SetColor(color);
 			glows[entityHandle]->SetAlpha(alpha);
 		}
 	}
-	else {
-		if (glows.find(entityHandle) != glows.end()) {
+	else
+	{
+		if (glows.find(entityHandle) != glows.end())
+		{
 			delete glows[entityHandle];
 			glows.erase(entityHandle);
 		}
