@@ -45,16 +45,36 @@ std::shared_ptr<TFPlayerResource> TFPlayerResource::GetPlayerResource()
 
 bool TFPlayerResource::IsAlive(int playerEntIndex)
 {
-	if (playerEntIndex < 1 || playerEntIndex >= Interfaces::pEngineTool->GetMaxClients())
-	{
-		PRINT_TAG();
-		Warning("Out of range playerEntIndex %i in %s()\n", playerEntIndex, __FUNCTION__);
+	if (!CheckEntIndex(playerEntIndex, __FUNCTION__))
 		return false;
-	}
 
-	char buffer[32];
+	char buffer[8];
 	sprintf_s(buffer, "%.3i", playerEntIndex);
 
 	auto result = *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(m_PlayerResourceEntity.Get()), { "m_bAlive", buffer });
 	return result == 1;
+}
+
+int TFPlayerResource::GetMaxHealth(int playerEntIndex)
+{
+	if (!CheckEntIndex(playerEntIndex, __FUNCTION__))
+		return false;
+
+	char buffer[8];
+	sprintf_s(buffer, "%.3i", playerEntIndex);
+
+	auto result = *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity*>(m_PlayerResourceEntity.Get()), { "m_iMaxHealth", buffer });
+	return result;
+}
+
+bool TFPlayerResource::CheckEntIndex(int playerEntIndex, const char* functionName)
+{
+	if (playerEntIndex < 1 || playerEntIndex >= Interfaces::pEngineTool->GetMaxClients())
+	{
+		PRINT_TAG();
+		Warning("Out of range playerEntIndex %i in %s()\n", playerEntIndex, functionName);
+		return false;
+	}
+
+	return true;
 }

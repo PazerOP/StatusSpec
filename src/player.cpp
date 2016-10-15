@@ -285,17 +285,21 @@ TFClassType Player::GetClass() const {
 	return TFClass_Unknown;
 }
 
-int Player::GetHealth() const {
-	if (IsValid()) {
-		return dynamic_cast<C_BaseEntity *>(playerEntity.Get())->GetHealth();
-	}
+int Player::GetHealth() const
+{
+	if (IsValid())
+		return *Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iHealth" });
 
 	return 0;
 }
 
-int Player::GetMaxHealth() const {
-	if (IsValid()) {
-		return dynamic_cast<C_BaseEntity *>(playerEntity.Get())->GetMaxHealth();
+int Player::GetMaxHealth() const
+{
+	if (IsValid())
+	{
+		auto playerResource = TFPlayerResource::GetPlayerResource();
+		if (playerResource)
+			return playerResource->GetMaxHealth(playerEntity.GetEntryIndex());
 	}
 
 	return 0;
@@ -313,18 +317,17 @@ std::string Player::GetName() const {
 	return "";
 }
 
-int Player::GetObserverMode() const {
-	if (IsValid()) {
-		return dynamic_cast<C_BasePlayer *>(playerEntity.Get())->GetObserverMode();
-	}
+int Player::GetObserverMode() const
+{
+	if (IsValid())
+		return *Entities::GetEntityProp<int*>(playerEntity.Get(), { "m_iObserverMode" });
 
 	return OBS_MODE_NONE;
 }
 
 C_BaseEntity *Player::GetObserverTarget() const {
-	if (IsValid()) {
-		return dynamic_cast<C_BasePlayer *>(playerEntity.Get())->GetObserverTarget();
-	}
+	if (IsValid())
+		return Entities::GetEntityProp<EHANDLE*>(playerEntity.Get(), { "m_hObserverTarget" })->Get();
 
 	return playerEntity->GetBaseEntity();
 }
@@ -359,25 +362,23 @@ CSteamID Player::GetSteamID() const {
 	return CSteamID();
 }
 
-TFTeam Player::GetTeam() const {
-	if (IsValid()) {
+TFTeam Player::GetTeam() const
+{
+	if (IsValid())
+	{
 		C_BaseEntity* entity = dynamic_cast<C_BaseEntity *>(playerEntity.Get());
 		if (!entity)
 			return TFTeam_Unassigned;
 
-		//"DT_BaseEntity.m_iTeamNum"
-
-		//TFTeam team = (TFTeam)entity->GetTeamNumber();
-
 		TFTeam team = (TFTeam)*Entities::GetEntityProp<int*>(entity, { "m_iTeamNum" });
-
 		return team;
 	}
 
 	return TFTeam_Unassigned;
 }
 
-int Player::GetUserID() const {
+int Player::GetUserID() const
+{
 	if (IsValid()) {
 		player_info_t playerInfo;
 
@@ -389,9 +390,14 @@ int Player::GetUserID() const {
 	return 0;
 }
 
-C_BaseCombatWeapon *Player::GetWeapon(int i) const {
-	if (IsValid()) {
-		return dynamic_cast<C_BaseCombatCharacter *>(playerEntity.Get())->GetWeapon(i);
+C_BaseCombatWeapon *Player::GetWeapon(int i) const
+{
+	if (IsValid())
+	{
+		char buffer[8];
+		sprintf_s(buffer, "%.3i", i);
+
+		return Entities::GetEntityProp<CHandle<C_BaseCombatWeapon>*>(playerEntity.Get(), { "m_hMyWeapons", buffer })->Get();
 	}
 
 	return nullptr;
@@ -401,9 +407,7 @@ bool Player::IsAlive() const {
 	if (IsValid()) 
 	{
 		auto playerResource = TFPlayerResource::GetPlayerResource();
-
 		return playerResource->IsAlive(playerEntity.GetEntryIndex());
-		//return *Entities::GetEntityProp<int*>(dynamic_cast<C_BaseEntity *>(playerEntity.Get()), { "m_lifeState" }) == LIFE_ALIVE;
 	}
 
 	return false;
