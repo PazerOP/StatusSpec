@@ -25,11 +25,11 @@
 class ProjectileOutlines::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName, std::function<void()> updateFunction, std::function<void(Vector)> updateFadesFunction);
-	virtual ~Panel() { }
+	virtual ~Panel();
 
 	virtual void OnTick();
 
-	GlowManager *GetGlowManager();
+	GlowManager *GetGlowManager() { return &glowManager; }
 private:
 	bool DoPostScreenSpaceEffectsHook(const CViewSetup *pSetup);
 
@@ -310,6 +310,17 @@ ProjectileOutlines::Panel::Panel(vgui::Panel *parent, const char *panelName, std
 	updateGlowFades = updateFadesFunction;
 }
 
+ProjectileOutlines::Panel::~Panel()
+{
+	bool result = Funcs::RemoveHook(doPostScreenSpaceEffectsHook);
+	if (!result)
+		Error("Failed to remove DoPostScreenSpaceEffectsHook");
+
+	doPostScreenSpaceEffectsHook = 0;
+	updateGlows = nullptr;
+	updateGlowFades = nullptr;
+}
+
 void ProjectileOutlines::Panel::OnTick()
 {
 	if (!doPostScreenSpaceEffectsHook)
@@ -327,15 +338,14 @@ void ProjectileOutlines::Panel::OnTick()
 	updateGlows();
 }
 
-GlowManager *ProjectileOutlines::Panel::GetGlowManager() {
-	return &glowManager;
-}
-
 bool ProjectileOutlines::Panel::DoPostScreenSpaceEffectsHook(const CViewSetup *pSetup)
 {
-	updateGlowFades(pSetup->origin);
+	if (doPostScreenSpaceEffectsHook)
+	{
+		updateGlowFades(pSetup->origin);
 
-	glowManager.RenderGlowEffects(pSetup);
+		glowManager.RenderGlowEffects(pSetup);
+	}
 
 	RETURN_META_VALUE(MRES_IGNORED, false);
 }
