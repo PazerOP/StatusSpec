@@ -60,27 +60,27 @@ bool StatusSpecPlugin::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 
 	g_ModuleManager = new ModuleManager();
 
-	g_ModuleManager->RegisterAndLoadModule<AntiFreeze>("AntiFreeze");
-	g_ModuleManager->RegisterAndLoadModule<CameraAutoSwitch>("Camera Auto Switch");
-	g_ModuleManager->RegisterAndLoadModule<CameraSmooths>("Camera Smooths");
-	g_ModuleManager->RegisterAndLoadModule<CameraState>("Camera State");
-	g_ModuleManager->RegisterAndLoadModule<CameraTools>("Camera Tools");
+	//g_ModuleManager->RegisterAndLoadModule<AntiFreeze>("AntiFreeze");
+	//g_ModuleManager->RegisterAndLoadModule<CameraAutoSwitch>("Camera Auto Switch");
+	//g_ModuleManager->RegisterAndLoadModule<CameraSmooths>("Camera Smooths");
+	//g_ModuleManager->RegisterAndLoadModule<CameraState>("Camera State");
+	//g_ModuleManager->RegisterAndLoadModule<CameraTools>("Camera Tools");
 	g_ModuleManager->RegisterAndLoadModule<ConsoleTools>("Console Tools");
-	g_ModuleManager->RegisterAndLoadModule<CustomMaterials>("Custom Materials");
-	g_ModuleManager->RegisterAndLoadModule<CustomModels>("Custom Models");
-	g_ModuleManager->RegisterAndLoadModule<CustomTextures>("Custom Textures");
-	g_ModuleManager->RegisterAndLoadModule<FilesystemTools>("Filesystem Tools");
-	g_ModuleManager->RegisterAndLoadModule<FOVOverride>("FOV Override");
+	//g_ModuleManager->RegisterAndLoadModule<CustomMaterials>("Custom Materials");
+	//g_ModuleManager->RegisterAndLoadModule<CustomModels>("Custom Models");
+	//g_ModuleManager->RegisterAndLoadModule<CustomTextures>("Custom Textures");
+	//g_ModuleManager->RegisterAndLoadModule<FilesystemTools>("Filesystem Tools");
+	//g_ModuleManager->RegisterAndLoadModule<FOVOverride>("FOV Override");
 	g_ModuleManager->RegisterAndLoadModule<FreezeInfo>("Freeze Info");
 	g_ModuleManager->RegisterAndLoadModule<Killstreaks>("Killstreaks");
 	g_ModuleManager->RegisterAndLoadModule<LocalPlayer>("Local Player");
 	g_ModuleManager->RegisterAndLoadModule<MedigunInfo>("Medigun Info");
-	g_ModuleManager->RegisterAndLoadModule<MultiPanel>("MultiPanel");
-	g_ModuleManager->RegisterAndLoadModule<PlayerAliases>("Player Aliases");
-	g_ModuleManager->RegisterAndLoadModule<PlayerModels>("Player Models");
+	//g_ModuleManager->RegisterAndLoadModule<MultiPanel>("MultiPanel");
+	//g_ModuleManager->RegisterAndLoadModule<PlayerAliases>("Player Aliases");
+	//g_ModuleManager->RegisterAndLoadModule<PlayerModels>("Player Models");
 	g_ModuleManager->RegisterAndLoadModule<ProjectileOutlines>("Projectile Outlines");
-	g_ModuleManager->RegisterAndLoadModule<SteamTools>("Steam Tools");
-	g_ModuleManager->RegisterAndLoadModule<TeamHealthComparison>("Team Health Comparison");
+	//g_ModuleManager->RegisterAndLoadModule<SteamTools>("Steam Tools");
+	//g_ModuleManager->RegisterAndLoadModule<TeamHealthComparison>("Team Health Comparison");
 	
 	ConVar_Register();
 

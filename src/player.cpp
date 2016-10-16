@@ -21,6 +21,8 @@
 #include "icliententitylist.h"
 #include "steam/steam_api.h"
 #include "toolframework/ienginetool.h"
+#include <hltvcamera.h>
+#include <functional>
 
 #include "common.h"
 #include "entities.h"
@@ -31,22 +33,23 @@
 std::unique_ptr<Player> Player::s_Players[MAX_PLAYERS];
 Player* Player::GetPlayer(int entIndex)
 {
-	if (entIndex <= 0 || entIndex > Interfaces::pEngineTool->GetMaxClients())
+	if (entIndex < 1 || entIndex > Interfaces::pEngineTool->GetMaxClients())
 	{
 		PRINT_TAG();
 		Warning("Out of range playerEntIndex %i in %s()\n", entIndex, __FUNCTION__);
 		return nullptr;
 	}
 
-	Player* p = s_Players[entIndex].get();
+	Assert((entIndex - 1) >= 0 && (entIndex - 1) < MAX_PLAYERS);
+
+	Player* p = s_Players[entIndex - 1].get();
 	if (!p || !p->IsValid())
 	{
 		IClientEntity* playerEntity = Interfaces::pClientEntityList->GetClientEntity(entIndex);
 		if (!playerEntity)
 			return nullptr;
 
-		s_Players[entIndex] = std::unique_ptr<Player>(new Player());
-		p = s_Players[entIndex].get();
+		s_Players[entIndex - 1] = std::unique_ptr<Player>(p = new Player());
 		p->playerEntity = playerEntity;
 	}
 

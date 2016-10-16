@@ -421,6 +421,7 @@ void MedigunInfo::MedigunPanel::OnMedigunInfoUpdate(KeyValues *attributes) {
 		LoadControlSettings("Resource/UI/MedigunPanel.res", nullptr, nullptr, conditions);
 	}
 
+	// TODO: set up a custom message that doesn't spam a bunch of DialogVariables messages, forcing the panel to redraw 5 or 6 times.
 	SetDialogVariable("charge", int(floor(level * 100.0f)));
 	if (medigun == TFMedigun_Vaccinator)
 	{
