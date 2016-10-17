@@ -11,6 +11,7 @@
 #pragma once
 
 #include "../modules.h"
+#include "../tfdefs.h"
 
 class CCommand;
 class C_HLTVCamera;
@@ -37,12 +38,20 @@ private:
 	ConVar *force_mode;
 	ConVar *force_target;
 	ConVar *force_valid_target;
-	ConCommand *spec_player;
 	ConVar *spec_player_alive;
 	ConCommand *spec_pos;
+
+	ConCommand* spec_class;
+	ConCommand* spec_steamid;
+
 	void ChangeForceMode(IConVar *var, const char *pOldValue, float flOldValue);
 	void ChangeForceTarget(IConVar *var, const char *pOldValue, float flOldValue);
-	void SpecPlayer(const CCommand &command);
 	void SpecPosition(const CCommand &command);
 	void ToggleForceValidTarget(IConVar *var, const char *pOldValue, float flOldValue);
+
+	void SpecClass(const CCommand& command);
+	void SpecClass(TFTeam team, TFClassType playerClass, int classIndex);
+	void SpecSteamID(const CCommand& command);
+
+	void SpecPlayer(int playerIndex);
 };

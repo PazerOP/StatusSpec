@@ -24,7 +24,7 @@ class Player
 {
 public:
 	static Player* AsPlayer(IClientEntity* entity);
-	static Player* GetPlayer(int entIndex);
+	static Player* GetPlayer(int entIndex, const char* functionName = nullptr);
 
 	bool operator==(const Player &player) const { return IsEqualTo(player); }
 	bool operator!=(const Player &player) const { return IsNotEqualTo(player); }
@@ -99,6 +99,8 @@ private:
 
 	CHandle<IClientEntity> playerEntity;
 	mutable void* m_CachedPlayerEntity;
+
+	class HLTVCameraOverride;
 
 	void Init();
 	bool CacheNeedsRefresh() const;

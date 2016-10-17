@@ -64,7 +64,7 @@ bool StatusSpecPlugin::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	//g_ModuleManager->RegisterAndLoadModule<CameraAutoSwitch>("Camera Auto Switch");
 	//g_ModuleManager->RegisterAndLoadModule<CameraSmooths>("Camera Smooths");
 	//g_ModuleManager->RegisterAndLoadModule<CameraState>("Camera State");
-	//g_ModuleManager->RegisterAndLoadModule<CameraTools>("Camera Tools");
+	g_ModuleManager->RegisterAndLoadModule<CameraTools>("Camera Tools");
 	g_ModuleManager->RegisterAndLoadModule<ConsoleTools>("Console Tools");
 	//g_ModuleManager->RegisterAndLoadModule<CustomMaterials>("Custom Materials");
 	//g_ModuleManager->RegisterAndLoadModule<CustomModels>("Custom Models");

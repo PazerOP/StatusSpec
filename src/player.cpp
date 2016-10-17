@@ -31,12 +31,15 @@
 #include "../StatusSpec/TFPlayerResource.h"
 
 std::unique_ptr<Player> Player::s_Players[MAX_PLAYERS];
-Player* Player::GetPlayer(int entIndex)
+Player* Player::GetPlayer(int entIndex, const char* functionName)
 {
 	if (entIndex < 1 || entIndex > Interfaces::pEngineTool->GetMaxClients())
 	{
+		if (!functionName)
+			functionName = "<UNKNOWN>";
+
 		PRINT_TAG();
-		Warning("Out of range playerEntIndex %i in %s()\n", entIndex, __FUNCTION__);
+		Warning("Out of range playerEntIndex %i in %s\n", entIndex, functionName);
 		return nullptr;
 	}
 
@@ -274,10 +277,40 @@ int Player::GetObserverMode() const
 	return OBS_MODE_NONE;
 }
 
+class Player::HLTVCameraOverride : public C_HLTVCamera
+{
+public:
+	static C_BaseEntity* GetPrimaryTargetReimplementation()
+	{
+		HLTVCameraOverride* hltvCamera = (HLTVCameraOverride*)Interfaces::GetHLTVCamera();
+		if (!hltvCamera)
+			return nullptr;
+
+		if (hltvCamera->m_iCameraMan > 0)
+		{
+			Player *pCameraMan = Player::GetPlayer(hltvCamera->m_iCameraMan, __FUNCSIG__);
+			if (pCameraMan)
+				return pCameraMan->GetObserverTarget();
+		}
+
+		if (hltvCamera->m_iTraget1 <= 0)
+			return nullptr;
+
+		IClientEntity* target = Interfaces::pClientEntityList->GetClientEntity(hltvCamera->m_iTraget1);
+		return target ? target->GetBaseEntity() : nullptr;
+	}
+
+	using C_HLTVCamera::m_iCameraMan;
+	using C_HLTVCamera::m_iTraget1;
+};
+
 C_BaseEntity *Player::GetObserverTarget() const
 {
 	if (IsValid())
 	{
+		if (Interfaces::pEngineClient->IsHLTV())
+			return HLTVCameraOverride::GetPrimaryTargetReimplementation();
+
 		if (CacheNeedsRefresh() || !m_CachedObserverTarget)
 			m_CachedObserverTarget = Entities::GetEntityProp<EHANDLE*>(playerEntity.Get(), { "m_hObserverTarget" });
 
@@ -563,6 +596,13 @@ bool Player::CheckDependencies() {
 		nameRetrievalAvailable = false;
 		steamIDRetrievalAvailable = false;
 		userIDRetrievalAvailable = false;
+	}
+
+	if (!Interfaces::GetHLTVCamera())
+	{
+		PRINT_TAG();
+		Warning("Interface C_HLTVCamera for player helper class not available (required for retrieving spectated player)!\n");
+		ready = false;
 	}
 
 	if (!Interfaces::steamLibrariesAvailable) {

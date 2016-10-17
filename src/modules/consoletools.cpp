@@ -16,6 +16,7 @@
 #include "icvar.h"
 
 #include "../funcs.h"
+#include "../player.h"
 
 // this is a total hijack of a friend class declared but never defined in the public SDK
 class CCvar {
@@ -42,6 +43,8 @@ ConsoleTools::ConsoleTools() {
 	filter_remove = new ConCommand("statusspec_consoletools_filter_remove", [](const CCommand &command) { g_ModuleManager->GetModule<ConsoleTools>()->RemoveFilter(command); }, "remove a console filter", FCVAR_NONE);
 	flags_add = new ConCommand("statusspec_consoletools_flags_add", [](const CCommand &command) { g_ModuleManager->GetModule<ConsoleTools>()->AddFlags(command); }, "add a flag to a console command or variable", FCVAR_NONE);
 	flags_remove = new ConCommand("statusspec_consoletools_flags_remove", [](const CCommand &command) { g_ModuleManager->GetModule<ConsoleTools>()->RemoveFlags(command); }, "remove a flag from a console command or variable", FCVAR_NONE);
+
+	show_users = new ConCommand("statusspec_consoletools_show_users", [](const CCommand& command) { g_ModuleManager->GetModule<ConsoleTools>()->ShowUsers(command); }, "Lists all currently connected players on the server.", FCVAR_NONE);
 }
 
 bool ConsoleTools::CheckDependencies() {
@@ -89,6 +92,12 @@ bool ConsoleTools::CheckFilters(std::string message) {
 	}
 
 	return false;
+}
+
+void ConsoleTools::ShowUsers(const CCommand& command)
+{
+	for (Player* player : Player::Iterable())
+		Msg("// %-18s %s\n", RenderSteamID(player->GetSteamID().ConvertToUint64()).c_str(), player->GetName().c_str());
 }
 
 void ConsoleTools::AddFilter(const CCommand &command) {

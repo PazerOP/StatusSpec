@@ -25,7 +25,6 @@ private:
 	int GetLocalPlayerIndexOverride();
 
 	class Panel;
-	class HLTVCameraOverride;
 	Panel *panel;
 
 	bool getLocalPlayerIndexDetoured;

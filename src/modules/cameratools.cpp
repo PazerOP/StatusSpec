@@ -25,6 +25,7 @@
 #include "vgui/IScheme.h"
 #include "vgui/IVGui.h"
 #include "vgui_controls/EditablePanel.h"
+#include <characterset.h>
 
 #include "../common.h"
 #include "../exceptions.h"
@@ -55,7 +56,8 @@ public:
 	using C_HLTVCamera::m_vecVelocity;
 };
 
-CameraTools::CameraTools() {
+CameraTools::CameraTools()
+{
 	setModeHook = 0;
 	setPrimaryTargetHook = 0;
 	specguiSettings = new KeyValues("Resource/UI/SpectatorTournament.res");
@@ -64,9 +66,11 @@ CameraTools::CameraTools() {
 	force_mode = new ConVar("statusspec_cameratools_force_mode", "0", FCVAR_NONE, "if a valid mode, force the camera mode to this", [](IConVar *var, const char *pOldValue, float flOldValue) { g_ModuleManager->GetModule<CameraTools>()->ChangeForceMode(var, pOldValue, flOldValue); });
 	force_target = new ConVar("statusspec_cameratools_force_target", "-1", FCVAR_NONE, "if a valid target, force the camera target to this", [](IConVar *var, const char *pOldValue, float flOldValue) { g_ModuleManager->GetModule<CameraTools>()->ChangeForceTarget(var, pOldValue, flOldValue); });
 	force_valid_target = new ConVar("statusspec_cameratools_force_valid_target", "0", FCVAR_NONE, "forces the camera to only have valid targets", [](IConVar *var, const char *pOldValue, float flOldValue) { g_ModuleManager->GetModule<CameraTools>()->ToggleForceValidTarget(var, pOldValue, flOldValue); });
-	spec_player = new ConCommand("statusspec_cameratools_spec_player", [](const CCommand &command) { g_ModuleManager->GetModule<CameraTools>()->SpecPlayer(command); }, "spec a certain player", FCVAR_NONE);
 	spec_player_alive = new ConVar("statusspec_cameratools_spec_player_alive", "1", FCVAR_NONE, "prevent speccing dead players");
 	spec_pos = new ConCommand("statusspec_cameratools_spec_pos", [](const CCommand &command) { g_ModuleManager->GetModule<CameraTools>()->SpecPosition(command); }, "spec a certain camera position", FCVAR_NONE);
+
+	spec_class = new ConCommand("statusspec_cameratools_spec_class", [](const CCommand& command) { g_ModuleManager->GetModule<CameraTools>()->SpecClass(command); }, "Spectates a specific class. statusspec_cameratools_spec_class <team> <class> [index]");
+	spec_steamid = new ConCommand("statusspec_cameratools_spec_steamid", [](const CCommand& command) { g_ModuleManager->GetModule<CameraTools>()->SpecSteamID(command); }, "Spectates a player with the given steamid. statusspec_cameratools_spec_steamid <steamID>");
 }
 
 bool CameraTools::CheckDependencies() {
@@ -233,127 +237,178 @@ void CameraTools::ChangeForceTarget(IConVar *var, const char *pOldValue, float f
 	}
 }
 
-void CameraTools::SpecPlayer(const CCommand &command) {
-	if (command.ArgC() >= 3 && IsInteger(command.Arg(1)) && IsInteger(command.Arg(2))) {
-		try {
-			if (Interfaces::GetClientMode() && Interfaces::GetClientMode()->GetViewport()) {
-				vgui::VPANEL viewport = Interfaces::GetClientMode()->GetViewport()->GetVPanel();
+void CameraTools::SpecPlayer(int playerIndex)
+{
+	Player* player = Player::GetPlayer(playerIndex, __FUNCSIG__);
 
-				for (int i = 0; i < g_pVGuiPanel->GetChildCount(viewport); i++) {
-					vgui::VPANEL specgui = g_pVGuiPanel->GetChild(viewport, i);
-
-					if (strcmp(g_pVGuiPanel->GetName(specgui), "specgui") == 0) {
-						for (int i = 0; i < g_pVGuiPanel->GetChildCount(specgui); i++) {
-							vgui::VPANEL playerPanel = g_pVGuiPanel->GetChild(specgui, i);
-
-							if (strcmp(g_pVGuiPanel->GetClassName(playerPanel), "CTFPlayerPanel") == 0) {
-								vgui::EditablePanel *panel = dynamic_cast<vgui::EditablePanel *>(g_pVGuiPanel->GetPanel(playerPanel, GAME_PANEL_MODULE));
-
-								if (panel) {
-									KeyValues *dialogVariables = panel->GetDialogVariables();
-
-									if (dialogVariables) {
-										const char *name = dialogVariables->GetString("playername");
-
-										for (Player* player : Player::Iterable())
-										{
-											Assert(player);
-											if (!player)
-												continue;
-
-											if (player->GetName().compare(name) == 0)
-											{
-												int baseX = 0;
-												int baseY = 0;
-												int deltaX = 0;
-												int deltaY = 0;
-
-												if (player->GetTeam() == TFTeam_Red)
-												{
-													if (atoi(command.Arg(1)) != TFTeam_Red)
-														continue;
-
-													baseX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_base_offset_x"));
-													baseY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_base_y"));
-													deltaX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_delta_x"));
-													deltaY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team2_player_delta_y"));
-												}
-												else if (player->GetTeam() == TFTeam_Blue)
-												{
-													if (atoi(command.Arg(1)) != TFTeam_Blue)
-														continue;
-
-													baseX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_base_offset_x"));
-													baseY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_base_y"));
-													deltaX = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_delta_x"));
-													deltaY = g_pVGuiSchemeManager->GetProportionalScaledValue(specguiSettings->FindKey("specgui")->GetInt("team1_player_delta_y"));
-												}
-
-												int position = atoi(command.Arg(2));
-
-												int x, y;
-												g_pVGuiPanel->GetPos(playerPanel, x, y);
-
-												int relativeX = x - baseX;
-												int relativeY = y - baseY;
-
-												if (deltaX != 0 && relativeX / deltaX != position)
-													continue;
-												else if (relativeX != 0 && deltaX == 0)
-													continue;
-
-												if (deltaY != 0 && relativeY / deltaY != position)
-													continue;
-												else if (relativeY != 0 && deltaY == 0)
-													continue;
-
-												if (!spec_player_alive->GetBool() || player->IsAlive())
-													Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->GetEntity()->entindex());
-
-												return;
-											}
-										}
-									}
-								}
-							}
-						}
-
-						break;
-					}
-				}
-			}
-
-			Warning("No suitable player to switch to found!\n");
-		}
-		catch (bad_pointer &e) {
-			Warning("%s\n", e.what());
-		}
-	}
-	else if (command.ArgC() == 2 && IsInteger(command.Arg(1)))
+	if (player)
 	{
-		Player* player = Player::GetPlayer(atoi(command.Arg(1)));
-
-		if (player)
+		if (!spec_player_alive->GetBool() || player->IsAlive())
 		{
-			if (!spec_player_alive->GetBool() || player->IsAlive())
+			try
 			{
-				try
-				{
-					Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->GetEntity()->entindex());
-				}
-				catch (bad_pointer &e)
-				{
-					Warning("%s\n", e.what());
-				}
+				Funcs::GetFunc_C_HLTVCamera_SetPrimaryTarget()(Interfaces::GetHLTVCamera(), player->GetEntity()->entindex());
+			}
+			catch (bad_pointer &e)
+			{
+				Warning("%s\n", e.what());
 			}
 		}
 	}
+}
+
+void CameraTools::SpecClass(const CCommand& command)
+{
+	// Usage: <team> <class> [classIndex]
+	if (command.ArgC() < 3 || command.ArgC() > 4)
+	{
+		PRINT_TAG();
+		Warning("%s: Expected either 2 or 3 arguments\n", spec_class->GetName());
+		goto Usage;
+	}
+
+	TFTeam team;
+	if (!strnicmp(command.Arg(1), "blu", 3))
+		team = TFTeam_Blue;
+	else if (!strnicmp(command.Arg(1), "red", 3))
+		team = TFTeam_Red;
 	else
 	{
-		Warning("Usage: statusspec_cameratools_spec_player <team> <position> || statusspec_cameratools_spec_player <index>\n");
-
-		return;
+		PRINT_TAG();
+		Warning("%s: Unknown team \"%s\"\n", spec_class->GetName(), command.Arg(1));
+		goto Usage;
 	}
+
+	TFClassType playerClass;
+	if (!stricmp(command.Arg(2), "scout"))
+		playerClass = TFClass_Scout;
+	else if (!stricmp(command.Arg(2), "soldier") || !stricmp(command.Arg(2), "solly"))
+		playerClass = TFClass_Soldier;
+	else if (!stricmp(command.Arg(2), "pyro"))
+		playerClass = TFClass_Pyro;
+	else if (!strnicmp(command.Arg(2), "demo", 4))
+		playerClass = TFClass_DemoMan;
+	else if (!strnicmp(command.Arg(2), "heavy", 5))
+		playerClass = TFClass_Heavy;
+	else if (!stricmp(command.Arg(2), "engineer") || !stricmp(command.Arg(2), "engie"))
+		playerClass = TFClass_Engineer;
+	else if (!stricmp(command.Arg(2), "medic"))
+		playerClass = TFClass_Medic;
+	else if (!stricmp(command.Arg(2), "sniper"))
+		playerClass = TFClass_Sniper;
+	else if (!stricmp(command.Arg(2), "spy"))
+		playerClass = TFClass_Spy;
+	else
+	{
+		PRINT_TAG();
+		Warning("%s: Unknown class \"%s\"\n", spec_class->GetName(), command.Arg(2));
+		goto Usage;
+	}
+
+	int classIndex = -1;
+	if (command.ArgC() > 3)
+	{
+		if (!IsInteger(command.Arg(3)))
+		{
+			PRINT_TAG();
+			Warning("%s: class index \"%s\" is not an integer\n", spec_class->GetName(), command.Arg(3));
+			goto Usage;
+		}
+
+		classIndex = atoi(command.Arg(3));
+	}
+
+	SpecClass(team, playerClass, classIndex);
+	return;
+
+Usage:
+	PRINT_TAG();
+	Warning("Usage: %s\n", spec_class->GetHelpText());
+}
+
+void CameraTools::SpecClass(TFTeam team, TFClassType playerClass, int classIndex)
+{
+	int validPlayersCount = 0;
+	Player* validPlayers[MAX_PLAYERS];
+
+	for (Player* player : Player::Iterable())
+	{
+		if (player->GetTeam() != team || player->GetClass() != playerClass)
+			continue;
+
+		validPlayers[validPlayersCount++] = player;
+	}
+
+	if (validPlayersCount == 0)
+		return;	// Nobody to switch to
+
+	// If classIndex was not specified, cycle through the available options
+	if (classIndex < 0)
+	{
+		Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer(), __FUNCSIG__);
+		if (!localPlayer)
+			return;
+
+		if (localPlayer->GetObserverMode() == OBS_MODE_FIXED ||
+			localPlayer->GetObserverMode() == OBS_MODE_IN_EYE ||
+			localPlayer->GetObserverMode() == OBS_MODE_CHASE)
+		{
+			Player* spectatingPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
+			int currentIndex = -1;
+			for (int i = 0; i < validPlayersCount; i++)
+			{
+				if (validPlayers[i] == spectatingPlayer)
+				{
+					currentIndex = i;
+					break;
+				}
+			}
+
+			classIndex = currentIndex + 1;
+		}
+	}
+
+	if (classIndex < 0 || classIndex >= validPlayersCount)
+		classIndex = 0;
+
+	SpecPlayer(validPlayers[classIndex]->GetEntity()->entindex());
+}
+
+void CameraTools::SpecSteamID(const CCommand& command)
+{
+	characterset_t newSet;
+	CharacterSetBuild(&newSet, "{}()'");	// Everything the default set has, minus the ':'
+	CCommand newCommand;
+	if (!newCommand.Tokenize(command.GetCommandString(), &newSet))
+		return;
+ 
+	CSteamID parsed;
+	if (newCommand.ArgC() != 2)
+	{
+		PRINT_TAG();
+		Warning("%s: Expected 1 argument\n", spec_steamid->GetName());
+		goto Usage;
+	}
+
+	parsed = ParseSteamID(newCommand.Arg(1));
+	if (!parsed.IsValid())
+	{
+		PRINT_TAG();
+		Warning("%s: Unable to parse steamid\n", spec_steamid->GetName());
+		goto Usage;
+	}
+
+	for (Player* player : Player::Iterable())
+	{
+		if (player->GetSteamID() == parsed)
+			SpecPlayer(player->GetEntity()->entindex());
+	}
+
+	return;
+
+Usage:
+	PRINT_TAG();
+	Warning("Usage: %s\n", spec_steamid->GetHelpText());
 }
 
 void CameraTools::SpecPosition(const CCommand &command) {

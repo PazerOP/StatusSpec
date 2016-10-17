@@ -98,7 +98,7 @@ void PlayerModels::SetModelOverride(C_BaseEntity *entity, const model_t *&model)
 	if (!player)
 	{
 		if (Entities::CheckEntityBaseclass(entity, "TFRagdoll"))
-			player = Player::GetPlayer(*Entities::GetEntityProp<int*>(entity, { "m_iPlayerIndex" }));
+			player = Player::GetPlayer(*Entities::GetEntityProp<int*>(entity, { "m_iPlayerIndex" }), __FUNCSIG__);
 		else
 			return;
 	}

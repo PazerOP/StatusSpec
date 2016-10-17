@@ -78,7 +78,7 @@ bool FOVOverride::InToolModeOverride() {
 
 bool FOVOverride::SetupEngineViewOverride(Vector &origin, QAngle &angles, float &fov)
 {
-	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer());
+	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer(), __FUNCSIG__);
 
 	if (localPlayer) {
 		if (localPlayer->CheckCondition(TFCond_Zoomed)) {

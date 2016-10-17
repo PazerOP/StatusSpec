@@ -43,7 +43,8 @@ inline int ColorRangeRestrict(int color) {
 }
 
 inline bool IsInteger(const std::string &s) {
-	if (s.empty() || !isdigit(s[0])) return false;
+	if (s.empty() || !isdigit(s[0]) || s[0] == '-' || s[0] == '+')
+		return false;
 
 	char *p;
 	strtoull(s.c_str(), &p, 10);
@@ -96,6 +97,9 @@ inline std::string GetVGUITexturePath(std::string normalTexturePath) {
 
 	return path;
 }
+
+extern CSteamID ParseSteamID(const char* input);
+extern std::string RenderSteamID(const CSteamID& id);
 
 #define PLUGIN_VERSION "0.25.1"
 #define PRINT_TAG() ConColorMsg(Color(0, 153, 153, 255), "[StatusSpec] ")

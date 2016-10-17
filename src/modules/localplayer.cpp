@@ -27,15 +27,6 @@
 #include "../ifaces.h"
 #include "../player.h"
 
-class LocalPlayer::HLTVCameraOverride : public C_HLTVCamera
-{
-public:
-	static C_BaseEntity* GetPrimaryTargetReimplementation();
-
-	using C_HLTVCamera::m_iCameraMan;
-	using C_HLTVCamera::m_iTraget1;
-};
-
 class LocalPlayer::Panel : public vgui::Panel {
 public:
 	Panel(vgui::Panel *parent, const char *panelName, std::function<void()> setFunction);
@@ -80,6 +71,13 @@ bool LocalPlayer::CheckDependencies() {
 		ready = false;
 	}
 
+	if (!Interfaces::GetHLTVCamera())
+	{
+		PRINT_TAG();
+		Warning("Required interface C_HLTVCamera for module %s not available!\n", g_ModuleManager->GetModuleName<LocalPlayer>().c_str());
+		ready = false;
+	}
+
 	try {
 		Funcs::GetFunc_GetLocalPlayerIndex();
 	}
@@ -93,30 +91,11 @@ bool LocalPlayer::CheckDependencies() {
 	return ready;
 }
 
-C_BaseEntity* LocalPlayer::HLTVCameraOverride::GetPrimaryTargetReimplementation()
-{
-	HLTVCameraOverride* hltvCamera = (HLTVCameraOverride*)Interfaces::GetHLTVCamera();
-
-	if (hltvCamera->m_iCameraMan > 0)
-	{
-		Player *pCameraMan = Player::GetPlayer(hltvCamera->m_iCameraMan);
-
-		if (pCameraMan)
-			return pCameraMan->GetObserverTarget();
-	}
-
-	if (hltvCamera->m_iTraget1 <= 0)
-		return nullptr;
-
-	IClientEntity* target = Interfaces::pClientEntityList->GetClientEntity(hltvCamera->m_iTraget1);
-	return target ? target->GetBaseEntity() : nullptr;
-}
-
 int LocalPlayer::GetLocalPlayerIndexOverride()
 {
 	if (enabled->GetBool())
 	{
-		Player* localPlayer = Player::GetPlayer(player->GetInt());
+		Player* localPlayer = Player::GetPlayer(player->GetInt(), __FUNCSIG__);
 
 		if (localPlayer)
 			return player->GetInt();
@@ -127,7 +106,7 @@ int LocalPlayer::GetLocalPlayerIndexOverride()
 
 void LocalPlayer::SetToCurrentTarget()
 {
-	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer());
+	Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer(), __FUNCSIG__);
 
 	if (localPlayer)
 	{
@@ -135,11 +114,7 @@ void LocalPlayer::SetToCurrentTarget()
 			localPlayer->GetObserverMode() == OBS_MODE_IN_EYE ||
 			localPlayer->GetObserverMode() == OBS_MODE_CHASE)
 		{
-			Player* targetPlayer;
-			if (Interfaces::pEngineClient->IsHLTV())
-				targetPlayer = Player::AsPlayer(HLTVCameraOverride::GetPrimaryTargetReimplementation());
-			else
-				targetPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
+			Player* targetPlayer = Player::AsPlayer(localPlayer->GetObserverTarget());
 
 			if (targetPlayer)
 			{

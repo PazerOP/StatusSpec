@@ -321,7 +321,7 @@ bool Killstreaks::Panel::FireEventClientSideOverride(IGameEvent *event) {
 				event->SetInt("kill_streak_total", currentKillstreaks[attackerUserID]);
 				event->SetInt("kill_streak_wep", currentKillstreaks[attackerUserID]);
 
-				Player* attacker = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(attackerUserID) - 1);
+				Player* attacker = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(attackerUserID) - 1, __FUNCSIG__);
 
 				if (attacker) {
 					if (attacker->GetTeam() == TFTeam_Red) {
@@ -345,7 +345,7 @@ bool Killstreaks::Panel::FireEventClientSideOverride(IGameEvent *event) {
 		}
 
 		if (assisterUserID != -1) {
-			Player* assister = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(assisterUserID));
+			Player* assister = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(assisterUserID), __FUNCSIG__);
 
 			if (assister) {
 				for (int i = 0; i < MAX_WEAPONS; i++) {

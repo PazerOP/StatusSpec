@@ -72,7 +72,7 @@ bool PlayerAliases::CheckDependencies() {
 bool PlayerAliases::GetPlayerInfoOverride(int ent_num, player_info_t *pinfo) {
 	bool result = Funcs::CallFunc_IVEngineClient_GetPlayerInfo(Interfaces::pEngineClient, ent_num, pinfo);
 
-	Player* player = Player::GetPlayer(ent_num - 1);
+	Player* player = Player::GetPlayer(ent_num - 1, __FUNCSIG__);
 
 	if (!player) 
 	{

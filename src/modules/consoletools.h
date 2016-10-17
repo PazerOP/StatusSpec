@@ -40,9 +40,12 @@ private:
 	ConCommand *filter_remove;
 	ConCommand *flags_add;
 	ConCommand *flags_remove;
+	ConCommand* show_users;
+
 	void AddFilter(const CCommand &command);
 	void AddFlags(const CCommand &command);
 	void RemoveFilter(const CCommand &command);
 	void RemoveFlags(const CCommand &command);
 	void ToggleFilterEnabled(IConVar *var, const char *pOldValue, float flOldValue);
+	void ShowUsers(const CCommand& command);
 };

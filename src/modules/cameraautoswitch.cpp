@@ -108,7 +108,7 @@ bool CameraAutoSwitch::CheckDependencies() {
 void CameraAutoSwitch::FireGameEvent(IGameEvent *event) {
 	if (enabled->GetBool() && killer->GetBool()) {
 		if (strcmp(event->GetName(), GAME_EVENT_PLAYER_DEATH) == 0) {
-			Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer());
+			Player* localPlayer = Player::GetPlayer(Interfaces::pEngineClient->GetLocalPlayer(), __FUNCSIG__);
 
 			if (localPlayer) {
 				if (localPlayer->GetObserverMode() == OBS_MODE_FIXED || localPlayer->GetObserverMode() == OBS_MODE_IN_EYE || localPlayer->GetObserverMode() == OBS_MODE_CHASE) {
@@ -116,7 +116,7 @@ void CameraAutoSwitch::FireGameEvent(IGameEvent *event) {
 
 					if (targetPlayer) {
 						if (Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("userid")) == targetPlayer->GetEntity()->entindex()) {
-							Player* killer = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("attacker")));
+							Player* killer = Player::GetPlayer(Interfaces::pEngineClient->GetPlayerForUserID(event->GetInt("attacker")), __FUNCSIG__);
 
 							if (killer) {
 								if (killer_delay->GetFloat() > 0.0f) {
